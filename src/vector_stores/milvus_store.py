@@ -7,11 +7,11 @@ from typing import List, Dict, Any, Optional
 import numpy as np
 from tqdm import tqdm
 
-from .base import VectorStoreAdapter, SearchResult
+from .vectordb_adapter import VectorDBAdapter, SearchResult
 
 
-class MilvusAdapter(VectorStoreAdapter):
-    """Milvus vector store adapter"""
+class MilvusStore(VectorDBAdapter):
+    """Milvus vector store store"""
     
     def _validate_config(self) -> None:
         """Validate Milvus configuration"""
@@ -328,7 +328,7 @@ class MilvusAdapter(VectorStoreAdapter):
         
         print(f"✓ Cleared Milvus collection: {self.collection_name}")
     
-    def get_adapter_info(self) -> Dict[str, Any]:
+    def get_store_info(self) -> Dict[str, Any]:
         """Get Milvus adapter information"""
         return {
             'name': 'Milvus',

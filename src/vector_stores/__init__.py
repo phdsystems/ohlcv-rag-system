@@ -1,18 +1,18 @@
-from .base import VectorStoreAdapter, SearchResult
-from .chromadb_adapter import ChromaDBAdapter
-from .weaviate_adapter import WeaviateAdapter
-from .qdrant_adapter import QdrantAdapter
-from .faiss_adapter import FAISSAdapter
-from .milvus_adapter import MilvusAdapter
+from .vectordb_adapter import VectorDBAdapter, SearchResult
+from .chromadb_store import ChromaDBStore
+from .weaviate_store import WeaviateStore
+from .qdrant_store import QdrantStore
+from .faiss_store import FAISSStore
+from .milvus_store import MilvusStore
 from .vector_store_manager import VectorStoreManager
 
 __all__ = [
-    'VectorStoreAdapter',
+    'VectorDBAdapter',
     'SearchResult',
-    'ChromaDBAdapter',
-    'WeaviateAdapter',
-    'QdrantAdapter',
-    'FAISSAdapter',
-    'MilvusAdapter',
+    'ChromaDBStore',
+    'WeaviateStore',
+    'QdrantStore',
+    'FAISSStore',
+    'MilvusStore',
     'VectorStoreManager'
 ]

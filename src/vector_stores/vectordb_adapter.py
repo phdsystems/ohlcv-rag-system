@@ -17,26 +17,26 @@ class SearchResult:
         return f"SearchResult(id={self.id}, score={self.score:.3f})"
 
 
-class VectorStoreAdapter(ABC):
-    """Abstract base class for vector store adapters"""
+class VectorDBAdapter(ABC):
+    """Abstract base class defining the interface for all vector database stores"""
     
     def __init__(self, 
                  collection_name: str = "ohlcv_data",
                  embedding_model: str = "all-MiniLM-L6-v2",
                  config: Optional[Dict[str, Any]] = None):
         """
-        Initialize vector store adapter
+        Initialize vector database adapter
         
         Args:
             collection_name: Name of the collection/index
             embedding_model: Name of the sentence transformer model
-            config: Adapter-specific configuration
+            config: Store-specific configuration
         """
         self.collection_name = collection_name
         self.embedding_model_name = embedding_model
         self.config = config or {}
         
-        # Initialize embedding model (shared across all adapters)
+        # Initialize embedding model (shared across all stores)
         self.embedding_model = SentenceTransformer(embedding_model)
         self.embedding_dimension = self.embedding_model.get_sentence_embedding_dimension()
         
@@ -48,7 +48,7 @@ class VectorStoreAdapter(ABC):
     
     @abstractmethod
     def _validate_config(self) -> None:
-        """Validate adapter-specific configuration"""
+        """Validate store-specific configuration"""
         pass
     
     @abstractmethod
@@ -140,8 +140,8 @@ class VectorStoreAdapter(ABC):
         pass
     
     @abstractmethod
-    def get_adapter_info(self) -> Dict[str, Any]:
-        """Get information about the adapter"""
+    def get_store_info(self) -> Dict[str, Any]:
+        """Get information about the vector store"""
         pass
     
     def batch_add_documents(self,
@@ -190,35 +190,10 @@ class VectorStoreAdapter(ABC):
         results = self.search(query, n_results, filter_dict)
         return [r for r in results if r.score >= score_threshold]
     
-    def get_documents_by_ids(self, ids: List[str]) -> List[Tuple[str, Dict[str, Any]]]:
-        """
-        Retrieve documents by their IDs
-        
-        Args:
-            ids: List of document IDs
-            
-        Returns:
-            List of (document, metadata) tuples
-        """
-        # Default implementation using search
-        # Adapters can override with more efficient implementations
-        results = []
-        for doc_id in ids:
-            # This is a workaround - adapters should implement direct retrieval
-            pass
-        return results
-    
     def persist(self) -> None:
         """
         Persist the vector store to disk (if applicable)
         Some stores like ChromaDB auto-persist, others may need explicit save
-        """
-        pass
-    
-    def create_collection_if_not_exists(self) -> None:
-        """
-        Create collection if it doesn't exist
-        Default implementation - adapters can override
         """
         pass
     

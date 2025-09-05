@@ -7,11 +7,11 @@ import uuid
 from typing import List, Dict, Any, Optional
 from tqdm import tqdm
 
-from .base import VectorStoreAdapter, SearchResult
+from .vectordb_adapter import VectorDBAdapter, SearchResult
 
 
-class QdrantAdapter(VectorStoreAdapter):
-    """Qdrant vector store adapter"""
+class QdrantStore(VectorDBAdapter):
+    """Qdrant vector store store"""
     
     def _validate_config(self) -> None:
         """Validate Qdrant configuration"""
@@ -236,7 +236,7 @@ class QdrantAdapter(VectorStoreAdapter):
         self._create_collection()
         print(f"✓ Cleared Qdrant collection: {self.collection_name}")
     
-    def get_adapter_info(self) -> Dict[str, Any]:
+    def get_store_info(self) -> Dict[str, Any]:
         """Get Qdrant adapter information"""
         return {
             'name': 'Qdrant',

@@ -4,11 +4,11 @@ from typing import List, Dict, Any, Optional
 import uuid
 from tqdm import tqdm
 
-from .base import VectorStoreAdapter, SearchResult
+from .vectordb_adapter import VectorDBAdapter, SearchResult
 
 
-class ChromaDBAdapter(VectorStoreAdapter):
-    """ChromaDB vector store adapter"""
+class ChromaDBStore(VectorDBAdapter):
+    """ChromaDB vector store implementation"""
     
     def _validate_config(self) -> None:
         """Validate ChromaDB configuration"""
@@ -121,8 +121,8 @@ class ChromaDBAdapter(VectorStoreAdapter):
         )
         print(f"✓ Cleared ChromaDB collection: {self.collection_name}")
     
-    def get_adapter_info(self) -> Dict[str, Any]:
-        """Get ChromaDB adapter information"""
+    def get_store_info(self) -> Dict[str, Any]:
+        """Get ChromaDB store information"""
         return {
             'name': 'ChromaDB',
             'type': 'chromadb',

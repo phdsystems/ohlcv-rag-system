@@ -7,11 +7,11 @@ from typing import List, Dict, Any, Optional
 import uuid
 from tqdm import tqdm
 
-from .base import VectorStoreAdapter, SearchResult
+from .vectordb_adapter import VectorDBAdapter, SearchResult
 
 
-class FAISSAdapter(VectorStoreAdapter):
-    """FAISS (Facebook AI Similarity Search) vector store adapter"""
+class FAISSStore(VectorDBAdapter):
+    """FAISS (Facebook AI Similarity Search) vector store store"""
     
     def _validate_config(self) -> None:
         """Validate FAISS configuration"""
@@ -291,7 +291,7 @@ class FAISSAdapter(VectorStoreAdapter):
         self._save_index()
         print(f"✓ Cleared FAISS index: {self.collection_name}")
     
-    def get_adapter_info(self) -> Dict[str, Any]:
+    def get_store_info(self) -> Dict[str, Any]:
         """Get FAISS adapter information"""
         return {
             'name': 'FAISS',

@@ -188,7 +188,7 @@ class OHLCVVectorStore:
     
     def get_collection_stats(self) -> Dict[str, Any]:
         """Get collection statistics (backward compatibility)"""
-        info = self.adapter.get_adapter_info()
+        info = self.adapter.get_store_info()
         
         return {
             'total_chunks': info.get('document_count', 0),

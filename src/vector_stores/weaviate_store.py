@@ -4,11 +4,11 @@ import uuid
 from typing import List, Dict, Any, Optional
 from tqdm import tqdm
 
-from .base import VectorStoreAdapter, SearchResult
+from .vectordb_adapter import VectorDBAdapter, SearchResult
 
 
-class WeaviateAdapter(VectorStoreAdapter):
-    """Weaviate vector store adapter"""
+class WeaviateStore(VectorDBAdapter):
+    """Weaviate vector store store"""
     
     def _validate_config(self) -> None:
         """Validate Weaviate configuration"""
@@ -290,7 +290,7 @@ class WeaviateAdapter(VectorStoreAdapter):
         )
         print(f"✓ Cleared Weaviate class: {class_name}")
     
-    def get_adapter_info(self) -> Dict[str, Any]:
+    def get_store_info(self) -> Dict[str, Any]:
         """Get Weaviate adapter information"""
         return {
             'name': 'Weaviate',
