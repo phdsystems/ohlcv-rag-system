@@ -37,6 +37,18 @@ A Retrieval-Augmented Generation (RAG) system for analyzing OHLCV (Open, High, L
                                           └──────────────┘
 ```
 
+### RAG Pipeline
+
+The system uses a sophisticated RAG (Retrieval-Augmented Generation) pipeline that combines vector search with LLM analysis. 
+
+**How it works:**
+1. **Retrieval**: Finds relevant OHLCV data chunks using semantic search
+2. **Augmentation**: Enriches the query with retrieved market data and indicators
+3. **Generation**: LLM analyzes the context to provide data-driven insights
+
+📚 **[Comprehensive RAG Pipeline Documentation](./docs/RAG_PIPELINE.md)**  
+🎨 **[Visual Guide to RAG Pipeline](./docs/RAG_PIPELINE_VISUAL.md)**
+
 ## Installation
 
 1. Clone the repository:
@@ -173,9 +185,17 @@ Each chunk contains:
 - Statistical summaries
 - Metadata for filtering
 
+## Documentation
+
+- 📚 **[RAG Pipeline Deep Dive](docs/RAG_PIPELINE.md)** - Complete technical documentation of the RAG system
+- 🎨 **[RAG Pipeline Visual Guide](docs/RAG_PIPELINE_VISUAL.md)** - Visual explanations and diagrams
+- 🔌 **[Data Adapters Guide](docs/DATA_ADAPTERS.md)** - How to add custom data sources
+- 🗄️ **[Vector Stores Guide](docs/VECTOR_STORES.md)** - Supported vector databases
+- 📝 **[Coding Standards](docs/CODING_STANDARDS.md)** - Self-documenting code principles
+
 ## Development Philosophy
 
-This project follows **self-documenting code** principles. See [CODING_STANDARDS.md](docs/CODING_STANDARDS.md) for our approach to writing clear, maintainable code that expresses intent through thoughtful naming and structure.
+This project follows **self-documenting code** principles and **Object-Oriented Programming (OOP)** architecture. The codebase is designed for clarity, maintainability, and extensibility.
 
 ## Extending the System
 
