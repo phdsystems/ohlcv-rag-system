@@ -1,0 +1,108 @@
+# Git
+.git
+.gitignore
+.github
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.hypothesis/
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+.DS_Store
+
+# Data (will be mounted as volume)
+data/chroma_db/*
+data/csv/*
+data/faiss_db/*
+data/qdrant_db/*
+data/milvus_lite.db
+*.csv
+*.json
+!.env.example
+
+# Logs
+logs/
+*.log
+
+# Documentation (included selectively)
+docs/*.bak
+docs/.drafts/
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Scripts (included selectively)
+scripts/*.bak
+scripts/test/
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb
+
+# Cache
+.cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Build artifacts
+*.o
+*.a
+*.lib
+*.dll
+*.exe
+
+# Test files
+test_*.py
+*_test.py
+tests/
+
+# Package manager
+node_modules/
+yarn.lock
+package-lock.json
+pnpm-lock.yaml
+
+# uv
+.uv/
+uv.lock

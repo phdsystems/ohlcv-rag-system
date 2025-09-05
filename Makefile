@@ -1,57 +1,73 @@
-# OHLCV RAG System Makefile
+# Makefile for OHLCV RAG System Docker operations
 
-.PHONY: help install install-dev run clean test format lint setup
+# Variables
+IMAGE_NAME ?= ohlcv-rag
+BRANCH := $(shell git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main")
+IMAGE_TAG ?= $(subst /,-,$(BRANCH))
+DOCKER_BUILDKIT := 1
+COMPOSE_DOCKER_CLI_BUILD := 1
 
+# Export for docker-compose
+export IMAGE_TAG
+export DOCKER_BUILDKIT
+export COMPOSE_DOCKER_CLI_BUILD
+
+# Colors
+RED := \033[0;31m
+GREEN := \033[0;32m
+YELLOW := \033[1;33m
+BLUE := \033[0;34m
+NC := \033[0m # No Color
+
+.PHONY: help
 help: ## Show this help message
-	@echo "OHLCV RAG System - Available commands:"
+	@echo "$(BLUE)OHLCV RAG System - Docker Operations$(NC)"
 	@echo ""
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
+	@echo "$(YELLOW)Usage:$(NC)"
+	@echo "  make [target]"
+	@echo ""
+	@echo "$(YELLOW)Targets:$(NC)"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-20s$(NC) %s\n", $$1, $$2}'
+	@echo ""
+	@echo "$(YELLOW)Variables:$(NC)"
+	@echo "  $(GREEN)IMAGE_NAME$(NC)    = $(IMAGE_NAME)"
+	@echo "  $(GREEN)IMAGE_TAG$(NC)     = $(IMAGE_TAG)"
+	@echo "  $(GREEN)BRANCH$(NC)        = $(BRANCH)"
 
-install: ## Install production dependencies with uv
-	@echo "Installing dependencies..."
-	@uv sync --no-dev
+.PHONY: build
+build: ## Build Docker image (runtime target)
+	@echo "$(BLUE)Building $(IMAGE_NAME):$(IMAGE_TAG)...$(NC)"
+	@bash scripts/docker-build.sh
 
-install-dev: ## Install all dependencies including dev tools
-	@echo "Installing dependencies with dev tools..."
-	@uv sync
+.PHONY: build-all
+build-all: ## Build all Docker targets in parallel
+	@echo "$(BLUE)Building all targets for $(IMAGE_NAME):$(IMAGE_TAG)...$(NC)"
+	@bash scripts/docker-build.sh --all
 
-run: ## Run the OHLCV RAG system
-	@uv run python main.py
+.PHONY: up
+up: ## Start services with docker-compose
+	@echo "$(BLUE)Starting services...$(NC)"
+	docker-compose up -d
 
-setup: ## Complete setup (install uv if needed, sync deps, create .env)
-	@./setup.sh
+.PHONY: down
+down: ## Stop all services
+	@echo "$(YELLOW)Stopping services...$(NC)"
+	docker-compose down
 
-clean: ## Clean up cache and temporary files
-	@echo "Cleaning up..."
-	@find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
-	@find . -type d -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null || true
-	@find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
-	@find . -type f -name "*.pyc" -delete 2>/dev/null || true
-	@find . -type f -name "*.pyo" -delete 2>/dev/null || true
-	@find . -type f -name ".coverage" -delete 2>/dev/null || true
-	@rm -rf build/ dist/ 2>/dev/null || true
-	@echo "✓ Cleaned up cache and temporary files"
+.PHONY: logs
+logs: ## Show logs from all services
+	docker-compose logs -f
 
-test: ## Run tests
-	@uv run pytest
+.PHONY: shell
+shell: ## Open shell in running container
+	@echo "$(BLUE)Opening shell in container...$(NC)"
+	docker-compose exec ohlcv-rag /bin/bash
 
-format: ## Format code with black
-	@uv run black src/ main.py
+.PHONY: clean
+clean: ## Clean up Docker resources
+	@echo "$(YELLOW)Cleaning up...$(NC)"
+	docker-compose down
+	docker system prune -f
 
-lint: ## Lint code with ruff
-	@uv run ruff check src/ main.py
-
-shell: ## Start interactive Python shell with project context
-	@uv run ipython
-
-fetch-data: ## Fetch fresh OHLCV data
-	@uv run python -c "from src.data_ingestion import OHLCVDataIngestion; import os; from dotenv import load_dotenv; load_dotenv(); tickers = os.getenv('TICKER_SYMBOLS', 'AAPL,MSFT').split(','); ingestion = OHLCVDataIngestion(tickers); ingestion.fetch_ohlcv_data(); ingestion.save_data()"
-
-query: ## Interactive query mode
-	@uv run python -c "import main; main.main()"
-
-# Development commands
-dev-repl: ## Start IPython with all modules loaded
-	@uv run ipython -i -c "from src.data_ingestion import *; from src.vector_store import *; from src.retriever import *; from src.rag_pipeline import *; print('OHLCV RAG modules loaded')"
-
-check: format lint ## Format and lint code
+# Default target
+.DEFAULT_GOAL := help

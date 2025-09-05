@@ -1,0 +1,20 @@
+# Development overrides for docker-compose
+# This file is automatically loaded by docker-compose
+version: '3.9'
+
+services:
+  ohlcv-rag:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    volumes:
+      - .:/app  # Mount entire project for development
+      - /app/.venv  # Exclude venv
+      - /app/__pycache__  # Exclude cache
+    environment:
+      - LOG_LEVEL=DEBUG
+      - PYTHONDEBUG=1
+    stdin_open: true
+    tty: true
+    command: ["interactive"]
