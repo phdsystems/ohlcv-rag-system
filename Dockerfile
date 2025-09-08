@@ -4,18 +4,16 @@
 # Build stage for Python dependencies
 FROM python:3.11-slim AS python-deps
 
-# Install uv directly to /usr/local/bin
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh -s -- --to /usr/local/bin
-
 WORKDIR /tmp
 
 # Copy dependency files
 COPY pyproject.toml .
 COPY uv.lock* .
 
-# Install dependencies with uv sync
+# Install uv and dependencies in one RUN command
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --no-dev --no-install-project
+    curl -LsSf https://astral.sh/uv/install.sh | sh -s -- --to /usr/local/bin && \
+    /usr/local/bin/uv sync --no-dev --no-install-project
 
 # Build stage for application
 FROM python:3.11-slim AS app-build
