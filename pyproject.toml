@@ -3,7 +3,7 @@ name = "ohlcv-rag-system"
 version = "1.0.0"
 description = "RAG system for analyzing OHLCV financial market data"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.11"
 dependencies = [
     "pandas>=2.2.0",
     "numpy>=1.26.4",
