@@ -7,9 +7,9 @@ FROM python:3.11-slim AS python-deps
 # Install curl for downloading uv
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
-# Install uv (installs to ~/.cargo/bin by default)
+# Install uv (installs to ~/.local/bin by default)
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-ENV PATH="/root/.cargo/bin:${PATH}"
+ENV PATH="/root/.local/bin:${PATH}"
 
 WORKDIR /tmp
 
