@@ -4,19 +4,19 @@
 # Build stage for Python dependencies
 FROM python:3.11-slim AS python-deps
 
-# Enable BuildKit cache mount for pip
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --upgrade pip uv
+# Install uv
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.cargo/bin:${PATH}"
 
 WORKDIR /tmp
 
 # Copy dependency files
 COPY pyproject.toml .
-COPY requirements.txt* .
+COPY uv.lock* .
 
-# Install dependencies with uv only
+# Install dependencies with uv sync
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv pip install --system -r requirements.txt
+    uv sync --no-dev --no-install-project
 
 # Build stage for application
 FROM python:3.11-slim AS app-build
@@ -49,9 +49,10 @@ RUN useradd -m -u 1000 -s /bin/bash ohlcv && \
 
 WORKDIR /app
 
-# Copy Python packages from deps stage
-COPY --from=python-deps /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-COPY --from=python-deps /usr/local/bin /usr/local/bin
+# Copy Python packages from deps stage (uv installs to .venv)
+COPY --from=python-deps /tmp/.venv /opt/venv
+ENV PATH="/opt/venv/bin:${PATH}" \
+    VIRTUAL_ENV=/opt/venv
 
 # Copy application from build stage
 COPY --from=app-build --chown=ohlcv:ohlcv /app /app
@@ -95,15 +96,15 @@ RUN --mount=type=cache,target=/var/cache/apt \
     iputils-ping \
     && rm -rf /var/lib/apt/lists/*
 
-# Install development Python packages with uv
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv pip install --system \
-    ipython \
-    jupyter \
-    pytest \
-    black \
-    flake8 \
-    mypy
+# Install uv and development Python packages
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    /root/.cargo/bin/uv tool install ipython && \
+    /root/.cargo/bin/uv tool install jupyter && \
+    /root/.cargo/bin/uv tool install pytest && \
+    /root/.cargo/bin/uv tool install black && \
+    /root/.cargo/bin/uv tool install flake8 && \
+    /root/.cargo/bin/uv tool install mypy
+ENV PATH="/root/.cargo/bin:/root/.local/bin:${PATH}"
 
 USER ohlcv
 
@@ -127,8 +128,10 @@ RUN adduser -D -u 1000 -s /bin/sh ohlcv && \
 
 WORKDIR /app
 
-# Copy only necessary files
-COPY --from=python-deps /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+# Copy Python packages from deps stage (uv installs to .venv)
+COPY --from=python-deps /tmp/.venv /opt/venv
+ENV PATH="/opt/venv/bin:${PATH}" \
+    VIRTUAL_ENV=/opt/venv
 COPY --from=app-build --chown=ohlcv:ohlcv /app/src ./src
 COPY --from=app-build --chown=ohlcv:ohlcv /app/main_oop.py .
 
