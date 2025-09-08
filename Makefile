@@ -69,5 +69,25 @@ clean: ## Clean up Docker resources
 	docker-compose down
 	docker system prune -f
 
+.PHONY: test
+test: ## Run unit tests
+	@echo "$(BLUE)Running unit tests...$(NC)"
+	@python -m pytest tests/test_simple.py -v
+
+.PHONY: test-all
+test-all: ## Run all tests with coverage
+	@echo "$(BLUE)Running all tests with coverage...$(NC)"
+	@python -m pytest tests/ -v --cov=src --cov-report=term-missing || true
+
+.PHONY: test-simple
+test-simple: ## Run simple mock-based tests
+	@echo "$(BLUE)Running simple tests...$(NC)"
+	@python -m pytest tests/test_simple.py -v
+
+.PHONY: test-install
+test-install: ## Install test dependencies
+	@echo "$(BLUE)Installing test dependencies...$(NC)"
+	@pip install -r requirements-test.txt
+
 # Default target
 .DEFAULT_GOAL := help
