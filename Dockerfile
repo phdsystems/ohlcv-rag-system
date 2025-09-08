@@ -14,11 +14,9 @@ WORKDIR /tmp
 COPY pyproject.toml .
 COPY requirements.txt* .
 
-# Install dependencies with uv for speed
+# Install dependencies with uv only
 RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=cache,target=/root/.cache/pip \
-    uv pip install --system -r requirements.txt || \
-    pip install -r requirements.txt
+    uv pip install --system -r requirements.txt
 
 # Build stage for application
 FROM python:3.11-slim AS app-build
@@ -97,9 +95,9 @@ RUN --mount=type=cache,target=/var/cache/apt \
     iputils-ping \
     && rm -rf /var/lib/apt/lists/*
 
-# Install development Python packages
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --system \
+# Install development Python packages with uv
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --system \
     ipython \
     jupyter \
     pytest \
