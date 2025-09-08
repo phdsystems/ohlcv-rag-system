@@ -7,16 +7,19 @@ FROM python:3.11-slim AS python-deps
 # Install curl for downloading uv
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
+# Install uv (installs to ~/.cargo/bin by default)
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.cargo/bin:${PATH}"
+
 WORKDIR /tmp
 
 # Copy dependency files
 COPY pyproject.toml .
 COPY uv.lock* .
 
-# Install uv and dependencies
+# Install dependencies with uv
 RUN --mount=type=cache,target=/root/.cache/uv \
-    curl -LsSf https://astral.sh/uv/install.sh | sh -s -- --to /usr/local/bin && \
-    /usr/local/bin/uv sync --no-dev --no-install-project
+    uv sync --no-dev --no-install-project
 
 # Build stage for application
 FROM python:3.11-slim AS app-build
