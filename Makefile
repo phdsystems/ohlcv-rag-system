@@ -89,5 +89,35 @@ test-install: ## Install test dependencies
 	@echo "$(BLUE)Installing test dependencies...$(NC)"
 	@pip install -r requirements-test.txt
 
+.PHONY: test-integration
+test-integration: ## Run integration tests with Testcontainers
+	@echo "$(BLUE)Running integration tests with Testcontainers...$(NC)"
+	@python -m pytest tests/integration/ -m integration -v
+
+.PHONY: test-integration-install
+test-integration-install: ## Install integration test dependencies
+	@echo "$(BLUE)Installing integration test dependencies...$(NC)"
+	@pip install -r requirements-integration.txt
+
+.PHONY: test-chromadb
+test-chromadb: ## Run ChromaDB integration tests
+	@echo "$(BLUE)Running ChromaDB integration tests...$(NC)"
+	@python -m pytest tests/integration/test_chromadb_integration.py -v
+
+.PHONY: test-weaviate
+test-weaviate: ## Run Weaviate integration tests
+	@echo "$(BLUE)Running Weaviate integration tests...$(NC)"
+	@python -m pytest tests/integration/test_weaviate_integration.py -v
+
+.PHONY: test-qdrant
+test-qdrant: ## Run Qdrant integration tests
+	@echo "$(BLUE)Running Qdrant integration tests...$(NC)"
+	@python -m pytest tests/integration/test_qdrant_integration.py -v
+
+.PHONY: test-e2e
+test-e2e: ## Run end-to-end integration tests
+	@echo "$(BLUE)Running end-to-end integration tests...$(NC)"
+	@python -m pytest tests/integration/test_end_to_end.py -v -s
+
 # Default target
 .DEFAULT_GOAL := help

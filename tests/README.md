@@ -2,22 +2,31 @@
 
 ## Overview
 
-This directory contains the comprehensive test suite for the OHLCV RAG System. The tests cover all major components including data ingestion, vector storage, retrieval, and the RAG pipeline.
+This directory contains the comprehensive test suite for the OHLCV RAG System. The tests include both unit tests and integration tests using Testcontainers for realistic testing with actual databases.
 
 ## Test Structure
 
 ```
 tests/
-├── __init__.py              # Test package initialization
-├── conftest.py             # Shared fixtures and test configuration
-├── run_tests.py            # Test runner script
-├── test_data_ingestion.py  # Tests for data ingestion module
-├── test_data_adapters.py   # Tests for data source adapters
-├── test_vector_store.py    # Tests for vector store operations
-├── test_retriever.py       # Tests for retrieval functionality
-├── test_rag_pipeline.py    # Tests for RAG pipeline
-├── test_application.py     # Tests for main application
-└── test_main.py           # Tests for main entry points
+├── __init__.py                          # Test package initialization
+├── conftest.py                         # Shared fixtures for unit tests
+├── conftest_full.py                    # Full fixtures with pandas/numpy
+├── run_tests.py                        # Test runner script
+├── test_data_ingestion.py              # Unit tests for data ingestion
+├── test_data_adapters.py               # Unit tests for data adapters
+├── test_vector_store.py                # Unit tests for vector stores
+├── test_retriever.py                   # Unit tests for retriever
+├── test_rag_pipeline.py                # Unit tests for RAG pipeline
+├── test_application.py                 # Unit tests for application
+├── test_main.py                       # Unit tests for main entry
+├── test_simple.py                      # Simple mock-based tests
+└── integration/                        # Integration tests with Testcontainers
+    ├── __init__.py
+    ├── conftest.py                     # Testcontainers fixtures
+    ├── test_chromadb_integration.py    # ChromaDB integration tests
+    ├── test_weaviate_integration.py    # Weaviate integration tests
+    ├── test_qdrant_integration.py      # Qdrant integration tests
+    └── test_end_to_end.py             # End-to-end integration tests
 ```
 
 ## Running Tests
@@ -170,6 +179,78 @@ python -m pytest tests/ --cov=src --cov-report=xml --cov-report=term
 - Critical components (data ingestion, RAG pipeline): 90%+
 - Utility functions: 70%+
 
+## Integration Tests with Testcontainers
+
+### Overview
+Integration tests use Testcontainers to spin up real database instances in Docker containers, providing realistic testing environments.
+
+### Prerequisites
+- Docker must be installed and running
+- Install integration test dependencies:
+```bash
+pip install -r requirements-integration.txt
+```
+
+### Running Integration Tests
+
+```bash
+# Run only integration tests
+python -m pytest tests/integration/ -m integration
+
+# Run specific vector store integration tests
+python -m pytest tests/integration/test_chromadb_integration.py
+python -m pytest tests/integration/test_weaviate_integration.py
+python -m pytest tests/integration/test_qdrant_integration.py
+
+# Run end-to-end tests
+python -m pytest tests/integration/test_end_to_end.py -m slow
+
+# Run with verbose output
+python -m pytest tests/integration/ -v -s
+```
+
+### Testcontainers Features
+
+1. **Automatic Container Management**: Containers are automatically started before tests and cleaned up after
+2. **Isolated Testing**: Each test gets a clean database instance
+3. **Real Database Testing**: Tests run against actual database implementations
+4. **Port Management**: Automatic port allocation prevents conflicts
+
+### Available Fixtures
+
+#### Vector Store Containers
+- `chromadb_container`: ChromaDB server instance
+- `weaviate_container`: Weaviate server instance
+- `qdrant_container`: Qdrant server instance
+- `milvus_container`: Milvus server instance (with dependencies)
+
+#### Database Containers
+- `postgres_container`: PostgreSQL database
+- `redis_container`: Redis cache
+
+#### Clean Instances
+- `clean_chromadb`: Fresh ChromaDB client for each test
+- `clean_weaviate`: Fresh Weaviate client for each test
+- `clean_qdrant`: Fresh Qdrant client for each test
+
+## Test Markers
+
+Tests are marked with different categories for selective execution:
+
+```bash
+# Run only unit tests
+pytest -m unit
+
+# Run only integration tests (requires Docker)
+pytest -m integration
+
+# Run slow tests
+pytest -m slow
+
+# Run tests that don't require Docker
+pytest -m "not docker"
+```
+
 ## Troubleshooting
 
 ### Import Errors
@@ -182,10 +263,19 @@ python -m pytest tests/
 ### Missing Dependencies
 Install all test dependencies:
 ```bash
-pip install -r requirements-test.txt  # If available
-# Or
-pip install pytest pytest-cov pytest-mock
+# Unit test dependencies
+pip install -r requirements-test.txt
+
+# Integration test dependencies
+pip install -r requirements-integration.txt
 ```
+
+### Docker Issues
+For Testcontainers/integration tests:
+- Ensure Docker is running: `docker ps`
+- Check Docker permissions: `docker run hello-world`
+- Clean up containers: `docker container prune`
+- Clean up volumes: `docker volume prune`
 
 ### Mock Issues
 If mocks aren't working correctly, check:
@@ -193,11 +283,34 @@ If mocks aren't working correctly, check:
 - Mock return values match expected types
 - Mock side effects are properly configured
 
+### Testcontainers Timeout
+If containers take too long to start:
+- Increase timeout in conftest.py `wait_for_logs(timeout=60)`
+- Pre-pull images: `docker pull chromadb/chroma:latest`
+- Check system resources
+
+## Performance Considerations
+
+### Integration Test Performance
+- Integration tests are slower due to container startup
+- Use `@pytest.mark.slow` for long-running tests
+- Run integration tests separately in CI/CD
+- Consider using container reuse for faster local development
+
+### Parallel Execution
+```bash
+# Run tests in parallel (requires pytest-xdist)
+pip install pytest-xdist
+pytest -n auto tests/
+```
+
 ## Contributing
 
 When contributing tests:
 1. Ensure all new code has corresponding tests
-2. Run the full test suite before submitting
-3. Maintain or improve code coverage
-4. Follow existing test patterns and conventions
-5. Update this README if adding new test categories
+2. Add appropriate test markers (@pytest.mark.unit, @pytest.mark.integration)
+3. Run the full test suite before submitting
+4. Maintain or improve code coverage
+5. Follow existing test patterns and conventions
+6. Update this README if adding new test categories
+7. For integration tests, ensure proper cleanup in fixtures
