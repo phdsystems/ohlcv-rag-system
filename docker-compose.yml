@@ -27,7 +27,7 @@ services:
     networks:
       - ohlcv-network
     restart: unless-stopped
-    command: ["python", "main_oop.py", "interactive"]
+    command: ["main_oop.py", "interactive"]
 
   # Development service with additional tools
   ohlcv-rag-dev:
@@ -54,7 +54,7 @@ services:
       - "8888:8888"  # Jupyter
     stdin_open: true
     tty: true
-    command: ["python", "main_oop.py", "interactive"]
+    command: ["main_oop.py", "interactive"]
 
   # ChromaDB service (default vector store)
   chromadb:
