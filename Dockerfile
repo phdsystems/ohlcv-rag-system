@@ -6,7 +6,6 @@ FROM python:3.11-slim AS python-deps
 
 # Install uv
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-ENV PATH="/root/.cargo/bin:${PATH}"
 
 WORKDIR /tmp
 
@@ -14,9 +13,9 @@ WORKDIR /tmp
 COPY pyproject.toml .
 COPY uv.lock* .
 
-# Install dependencies with uv sync
+# Install dependencies with uv sync (use full path to uv)
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --no-dev --no-install-project
+    /root/.cargo/bin/uv sync --no-dev --no-install-project
 
 # Build stage for application
 FROM python:3.11-slim AS app-build
