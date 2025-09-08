@@ -4,13 +4,16 @@
 # Build stage for Python dependencies
 FROM python:3.11-slim AS python-deps
 
+# Install curl for downloading uv
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /tmp
 
 # Copy dependency files
 COPY pyproject.toml .
 COPY uv.lock* .
 
-# Install uv and dependencies in one RUN command
+# Install uv and dependencies
 RUN --mount=type=cache,target=/root/.cache/uv \
     curl -LsSf https://astral.sh/uv/install.sh | sh -s -- --to /usr/local/bin && \
     /usr/local/bin/uv sync --no-dev --no-install-project
