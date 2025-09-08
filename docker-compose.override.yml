@@ -17,4 +17,4 @@ services:
       - PYTHONDEBUG=1
     stdin_open: true
     tty: true
-    command: ["interactive"]
+    command: ["python", "main_oop.py", "interactive"]
