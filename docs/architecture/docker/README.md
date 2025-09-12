@@ -8,6 +8,8 @@ This directory contains comprehensive documentation for Docker containerization 
 
 ### 📚 Available Documents
 
+#### Core Strategies
+
 1. **[Docker Optimization Strategy](./optimization-strategy.md)**
    - Multi-stage build architecture
    - Parallelism implementation
@@ -23,14 +25,39 @@ This directory contains comprehensive documentation for Docker containerization 
    - Migration guide from pip
    - Troubleshooting guide
 
-3. **[Advanced Docker Strategies](./advanced-strategies.md)**
-   - Container orchestration (Swarm/K8s)
-   - Volume management and performance
-   - Networking optimization
+#### Production Strategies
+
+3. **[Container Orchestration Strategy](./orchestration-strategy.md)**
+   - Docker Swarm configuration
+   - Kubernetes deployment
+   - Service discovery and load balancing
+   - Auto-scaling strategy
+   - High availability configuration
+   - Resource management
+
+4. **[Monitoring and Logging Strategy](./monitoring-logging-strategy.md)**
+   - Prometheus metrics collection
+   - ELK stack for logging
+   - Distributed tracing with Jaeger
+   - Health checks and probes
+   - Alerting configuration
+   - Grafana dashboards
+
+5. **[CI/CD Pipeline Strategy](./cicd-pipeline-strategy.md)**
+   - GitHub Actions workflows
+   - Automated testing strategy
+   - Docker build pipeline
+   - Security scanning
+   - Deployment automation
+   - Release management
+
+6. **[Container Security Strategy](./security-strategy.md)**
+   - Image security and scanning
    - Secret management
-   - Logging and monitoring
-   - CI/CD pipeline optimization
-   - GPU support and dev containers
+   - Runtime security
+   - Network policies
+   - Access control (RBAC)
+   - Compliance and auditing
 
 ## Quick Reference
 
