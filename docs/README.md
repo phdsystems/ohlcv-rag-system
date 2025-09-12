@@ -16,12 +16,14 @@ Step-by-step instructions for users and developers:
 ### Technical Documentation
 In-depth technical references:
 - **[Architecture Overview](ARCHITECTURE.md)** - System design, components, and patterns
+- **[Testing Strategy](architecture/testing-strategy.md)** - Hybrid testing approach
+- **[Docker Architecture](architecture/docker/)** - Container strategies and optimizations
 - **[API Reference](API_REFERENCE.md)** - Complete API documentation
 - **[RAG Pipeline](RAG_PIPELINE.md)** - Retrieval-Augmented Generation implementation
 - **[Visual RAG Guide](RAG_PIPELINE_VISUAL.md)** - Visual workflow explanations
-- **[Vector Stores](VECTOR_STORES.md)** - Vector database integrations
-- **[Data Adapters](DATA_ADAPTERS.md)** - Data source implementations
-- **[Coding Standards](CODING_STANDARDS.md)** - Development best practices
+- **[Vector Stores](VECTOR_STORES.md)** - Database options and configuration
+- **[Data Adapters](DATA_ADAPTERS.md)** - Data source integrations
+- **[Coding Standards](CODING_STANDARDS.md)** - Code style and best practices
 
 ## 🚀 Quick Navigation
 

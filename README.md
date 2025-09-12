@@ -40,6 +40,8 @@ See **[QUICKSTART.md](docs/QUICKSTART.md)** for more options or the **[Getting S
 - **[API Reference](docs/API_REFERENCE.md)** - Detailed API documentation
 - **[RAG Pipeline](docs/RAG_PIPELINE.md)** - Understanding the RAG architecture
 - **[Vector Stores](docs/VECTOR_STORES.md)** - Database options and configuration
+- **[Data Adapters](docs/DATA_ADAPTERS.md)** - Data source integrations
+- **[Coding Standards](docs/CODING_STANDARDS.md)** - Code style and best practices
 
 ## Basic Usage
 
