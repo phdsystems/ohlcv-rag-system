@@ -14,26 +14,13 @@ A production-ready Retrieval-Augmented Generation (RAG) system for analyzing OHL
 ## Quick Start
 
 ```bash
-# Clone repository
+# Clone and run with Docker (recommended)
 git clone https://github.com/phdsystems/ohlcv-rag-system.git
 cd ohlcv-rag-system
-
-# Install with uv (recommended)
-uv pip install -e .
-uv pip install -e ".[integration]"  # Optional: for testcontainers
-uv pip install -e ".[vector-stores]"  # Optional: for additional vector stores
-
-# Setup environment (optional - mock LLM provider available)
-cp .env.example .env
-# Add your API keys to .env (or use llm_provider="mock")
-
-# Run locally
-python main.py
-
-# Or run with Docker
-make build
-make up
+make quick-start
 ```
+
+See **[QUICKSTART.md](QUICKSTART.md)** for more options or the **[Getting Started Guide](docs/guides/GETTING_STARTED.md)** for detailed setup.
 
 ## Documentation
 

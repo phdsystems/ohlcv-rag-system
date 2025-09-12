@@ -1,59 +1,64 @@
 # Quick Start Guide
 
-## Fastest Setup (3 commands)
+## Option 1: Docker (Recommended) 🐳
 
 ```bash
-# 1. Install uv if needed
+# Clone and run
+git clone https://github.com/phdsystems/ohlcv-rag-system.git
+cd ohlcv-rag-system
+make quick-start
+```
+
+That's it! The system is running.
+
+## Option 2: Local Setup 💻
+
+```bash
+# Clone repository
+git clone https://github.com/phdsystems/ohlcv-rag-system.git
+cd ohlcv-rag-system
+
+# Install and run (uv auto-installs if needed)
 curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# 2. Install dependencies
 uv sync
-
-# 3. Run the system
-uv run python main.py
+python main.py
 ```
 
-## Using Make Commands
+## Your First Query
 
 ```bash
-# Full automated setup
-make setup
+# Load sample data
+python main_oop.py setup --tickers AAPL MSFT GOOGL
 
-# Run the system
-make run
-
-# Other useful commands
-make help           # Show all available commands
-make install        # Install dependencies
-make install-dev    # Install with dev tools
-make clean          # Clean cache files
-make format         # Format code with black
-make lint           # Lint with ruff
-make test           # Run tests
-make fetch-data     # Fetch fresh OHLCV data
-make shell          # Interactive Python shell
+# Ask a question
+python main_oop.py query "What are the trends in tech stocks?"
 ```
 
-## Manual Setup
+## No API Key? No Problem!
+
+The system works with a mock LLM provider:
 
 ```bash
-# Install uv
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Sync dependencies (creates venv automatically)
-uv sync
-
-# Copy environment variables
-cp .env.example .env
-# Edit .env and add your OpenAI API key
-
-# Run the system
-uv run python main.py
+# In .env or environment
+LLM_PROVIDER=mock
 ```
 
-## Key Points
+## Common Commands
 
-- `uv sync` automatically creates and manages the virtual environment
-- No need for `pip` - uv handles everything
-- Use `uv run <command>` to run commands in the project environment
-- The Makefile provides convenient shortcuts for common tasks
+```bash
+make help      # Show all commands
+make test      # Run tests
+make shell     # Interactive shell
+make clean     # Clean up
+```
+
+## Next Steps
+
+- 📖 [Full Documentation](docs/)
+- 🚀 [Getting Started Guide](docs/guides/GETTING_STARTED.md)
+- 🐳 [Docker Guide](docs/guides/DOCKER.md)
+- 💡 [Usage Examples](docs/guides/USAGE.md)
+
+---
+
+**Need help?** [Open an issue](https://github.com/phdsystems/ohlcv-rag-system/issues)
