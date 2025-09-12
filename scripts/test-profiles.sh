@@ -31,7 +31,7 @@ run_test_profile() {
         "dev-mock")
             # Development tests - mock only, no external dependencies
             print_color "$YELLOW" "Running mock tests for development..."
-            pytest tests/test_mock_suite.py tests/test_simple.py \
+            pytest src/ -m unit \
                    -m "mock or unit" \
                    --tb=short \
                    -v \
@@ -41,9 +41,9 @@ run_test_profile() {
         "dev-quick")
             # Quick development tests - subset of unit tests
             print_color "$YELLOW" "Running quick unit tests..."
-            pytest tests/test_simple.py \
-                   tests/test_mock_suite.py::TestDataIngestionMocked \
-                   tests/test_mock_suite.py::TestRAGPipelineMocked \
+            pytest src/ \
+                   src/::TestDataIngestionMocked \
+                   src/::TestRAGPipelineMocked \
                    -m "not slow" \
                    --tb=line \
                    -q \
@@ -154,9 +154,9 @@ run_test_profile() {
         "smoke")
             # Smoke tests - minimal set to verify basic functionality
             print_color "$YELLOW" "Running smoke tests..."
-            pytest tests/test_simple.py::TestBasicFunctionality::test_mock_data_ingestion \
-                   tests/test_simple.py::TestBasicFunctionality::test_mock_vector_store \
-                   tests/test_simple.py::TestBasicFunctionality::test_mock_rag_pipeline \
+            pytest src/ -k TestBasicFunctionality::test_mock_data_ingestion \
+                   src/ -k TestBasicFunctionality::test_mock_vector_store \
+                   src/ -k TestBasicFunctionality::test_mock_rag_pipeline \
                    --tb=line \
                    -v \
                    $extra_args
@@ -165,7 +165,7 @@ run_test_profile() {
         "pre-commit")
             # Pre-commit tests - fast tests to run before committing
             print_color "$YELLOW" "Running pre-commit tests..."
-            pytest tests/test_simple.py tests/test_mock_suite.py \
+            pytest tests/test_simple.py src/ \
                    -m "not slow and not integration and not real_deps" \
                    --tb=line \
                    -x \

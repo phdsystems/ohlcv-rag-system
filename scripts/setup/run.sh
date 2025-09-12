@@ -10,4 +10,4 @@ fi
 
 # Run with uv
 echo "Starting OHLCV RAG System..."
-uv run python main.py
+uv run python main.py interactive

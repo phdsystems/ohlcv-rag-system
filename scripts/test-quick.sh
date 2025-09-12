@@ -12,8 +12,8 @@ export UV_PREFER_BINARY=1
 echo "📦 Installing minimal test dependencies..."
 uv pip install pytest pytest-cov pytest-mock --python 3.11
 
-# Run simple tests
-echo "🧪 Running simple unit tests..."
-.venv/bin/python -m pytest tests/test_simple.py -v --tb=short
+# Run unit tests
+echo "🧪 Running unit tests..."
+uv run pytest src/ -m unit -v --tb=short 2>/dev/null || uv run pytest src/ -v --tb=short
 
 echo "✅ Quick tests completed!"
