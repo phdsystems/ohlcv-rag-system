@@ -57,8 +57,7 @@ tests/
 │   └── test_real_functionality.py      # Real-world workflows
 ├── pytest.ini                          # Pytest configuration
 ├── .coveragerc                         # Coverage configuration
-├── conftest.py                         # Shared fixtures
-└── run_tests.py                        # Test runner script
+└── conftest.py                         # Shared fixtures
 ```
 
 **Benefits:**
@@ -101,8 +100,8 @@ pytest
 # Using Make
 make test
 
-# Using the test runner
-python tests/run_tests.py
+# With coverage
+pytest --cov=src --cov-report=html
 ```
 
 ### Run Specific Test Levels
