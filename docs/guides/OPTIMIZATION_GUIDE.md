@@ -41,10 +41,10 @@ Runs only simple unit tests with minimal dependencies:
 ./scripts/test-quick.sh
 ```
 
-#### Smart Install (`scripts/install-smart.sh`)
+#### Smart Install (`scripts/smart-install.sh`)
 Intelligent installation that detects GPU and installs optimal PyTorch:
 ```bash
-./scripts/install-smart.sh
+./scripts/smart-install.sh
 ```
 
 ## Usage
@@ -58,7 +58,7 @@ make test-quick
 ### For Full Development
 ```bash
 # Smart install - detects GPU and installs optimal PyTorch
-make install-smart
+make smart-install
 
 # Then run all tests
 make test-all
@@ -81,7 +81,7 @@ uv sync --group test          # For integration tests
 
 ## Tips
 
-1. **First-time setup**: Use `make install-smart` for optimal dependencies (auto-detects GPU)
+1. **First-time setup**: Use `make smart-install` for optimal dependencies (auto-detects GPU)
 2. **Quick iterations**: Use `make test-quick` for rapid testing
 3. **CI/CD**: Use minimal groups to speed up pipelines
 4. **Production**: Use full dependencies with GPU support if needed

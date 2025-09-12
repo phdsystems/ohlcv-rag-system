@@ -113,10 +113,10 @@ test-profile: ## Run specific test profile (use PROFILE=<name>)
 	@echo "$(BLUE)Running test profile: $(PROFILE)...$(NC)"
 	@./scripts/test-profiles.sh $(PROFILE)
 
-.PHONY: install-smart
-install-smart: ## Smart install - auto-detects GPU and installs optimal PyTorch
+.PHONY: smart-install
+smart-install: ## Smart install - auto-detects GPU and installs optimal PyTorch
 	@echo "$(BLUE)Smart installation - detecting hardware and installing optimal PyTorch...$(NC)"
-	@./scripts/install-smart.sh
+	@./scripts/smart-install.sh
 
 .PHONY: test-install
 test-install: ## Install test dependencies
