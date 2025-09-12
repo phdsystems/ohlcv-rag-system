@@ -40,10 +40,28 @@ managed = true
 dev-dependencies = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
+    "pytest-mock>=3.15.0",
     "black>=23.7.0",
     "ruff>=0.0.287",
     "mypy>=1.5.1",
     "ipython>=8.14.0",
+]
+
+[project.optional-dependencies]
+integration = [
+    "testcontainers>=4.0.0",
+    "docker>=6.1.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-timeout>=2.1.0",
+    "redis>=4.5.0",
+    "psycopg2-binary>=2.9.0",
+    "pymongo>=4.4.0",
+]
+
+vector-stores = [
+    "weaviate-client>=3.25.0",
+    "qdrant-client>=1.7.0",
+    "pymilvus>=2.3.0",
 ]
 
 # Group dependencies for different use cases

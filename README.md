@@ -18,11 +18,19 @@ A production-ready Retrieval-Augmented Generation (RAG) system for analyzing OHL
 git clone https://github.com/phdsystems/ohlcv-rag-system.git
 cd ohlcv-rag-system
 
-# Setup environment
-cp .env.example .env
-# Add your OPENAI_API_KEY to .env
+# Install with uv (recommended)
+uv pip install -e .
+uv pip install -e ".[integration]"  # Optional: for testcontainers
+uv pip install -e ".[vector-stores]"  # Optional: for additional vector stores
 
-# Run with Docker
+# Setup environment (optional - mock LLM provider available)
+cp .env.example .env
+# Add your API keys to .env (or use llm_provider="mock")
+
+# Run locally
+python main.py
+
+# Or run with Docker
 make build
 make up
 ```
