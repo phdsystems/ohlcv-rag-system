@@ -22,7 +22,7 @@ services:
   app:
     build:
       context: ..
-      dockerfile: docker/Dockerfile.optimized
+      dockerfile: docker/Dockerfile.multi-stage
       target: runtime
       args:
         <<: *build-args
@@ -65,7 +65,7 @@ services:
   dev:
     build:
       context: ..
-      dockerfile: docker/Dockerfile.optimized
+      dockerfile: docker/Dockerfile.multi-stage
       target: development
       args:
         <<: *build-args
@@ -98,7 +98,7 @@ services:
   test:
     build:
       context: ..
-      dockerfile: docker/Dockerfile.optimized
+      dockerfile: docker/Dockerfile.multi-stage
       target: test
       args:
         <<: *build-args

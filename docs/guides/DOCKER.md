@@ -43,24 +43,24 @@ Key optimizations:
 
 ### Build Script
 
-The `scripts/docker-build.sh` script provides:
+The `docker/docker-build.sh` script provides:
 
 ```bash
 # Build default (runtime) target
-./scripts/docker-build.sh
+./docker/docker-build.sh
 
 # Build all targets in parallel
-./scripts/docker-build.sh --all
+./docker/docker-build.sh --all
 
 # Build specific target
-./scripts/docker-build.sh --dev
-./scripts/docker-build.sh --prod
+./docker/docker-build.sh --dev
+./docker/docker-build.sh --prod
 
 # Build without cache
-./scripts/docker-build.sh --no-cache
+./docker/docker-build.sh --no-cache
 
 # Build and push to registry
-./scripts/docker-build.sh --all --push
+./docker/docker-build.sh --all --push
 ```
 
 ### Automatic Branch Tagging
@@ -375,7 +375,7 @@ Build multiple images simultaneously:
 export DOCKER_BUILDKIT=1
 
 # Build in parallel
-./scripts/docker-build.sh --all
+./docker/docker-build.sh --all
 ```
 
 ## Troubleshooting
@@ -458,12 +458,12 @@ jobs:
       - name: Build images
         run: |
           export DOCKER_BUILDKIT=1
-          ./scripts/docker-build.sh --all
+          ./docker/docker-build.sh --all
       
       - name: Push to registry
         run: |
           echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-          ./scripts/docker-build.sh --push
+          ./docker/docker-build.sh --push
 ```
 
 ### Local Testing

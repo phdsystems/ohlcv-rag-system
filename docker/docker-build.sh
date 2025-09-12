@@ -14,8 +14,8 @@ NC='\033[0m' # No Color
 
 # Configuration
 PROJECT_NAME="ohlcv-rag"
-DOCKERFILE="Dockerfile.optimized"
-COMPOSE_FILE="docker-compose.optimized.yml"
+DOCKERFILE="Dockerfile.multi-stage"
+COMPOSE_FILE="docker-compose.prod.yml"
 DEFAULT_TAG="latest"
 
 # Helper functions
