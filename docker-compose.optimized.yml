@@ -1,0 +1,368 @@
+version: '3.9'
+
+x-common-env: &common-env
+  PYTHONUNBUFFERED: 1
+  PYTHONDONTWRITEBYTECODE: 1
+  LOG_LEVEL: ${LOG_LEVEL:-INFO}
+
+x-build-args: &build-args
+  BUILDKIT_INLINE_CACHE: 1
+  DOCKER_BUILDKIT: 1
+
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 40s
+
+services:
+  # ============================================
+  # Main Application Service
+  # ============================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.optimized
+      target: runtime
+      args:
+        <<: *build-args
+      cache_from:
+        - python:3.11-slim
+        - ohlcv-rag:cache
+    image: ohlcv-rag:${IMAGE_TAG:-latest}
+    container_name: ohlcv-rag-app
+    environment:
+      <<: *common-env
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      DATA_SOURCE: ${DATA_SOURCE:-yahoo}
+      VECTOR_STORE_TYPE: ${VECTOR_STORE_TYPE:-chromadb}
+      LLM_MODEL: ${LLM_MODEL:-gpt-3.5-turbo}
+      CHROMADB_HOST: chromadb
+      CHROMADB_PORT: 8000
+    volumes:
+      - ./data:/data:rw
+      - ./logs:/app/logs:rw
+      - ./.env:/app/.env:ro
+    networks:
+      - ohlcv-network
+    depends_on:
+      chromadb:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "python", "-c", "import sys; import src; sys.exit(0)"]
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
+
+  # ============================================
+  # Development Service
+  # ============================================
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.optimized
+      target: development
+      args:
+        <<: *build-args
+    image: ohlcv-rag:${IMAGE_TAG:-latest}-dev
+    container_name: ohlcv-rag-dev
+    environment:
+      <<: *common-env
+      LOG_LEVEL: DEBUG
+      PYTHONDEBUG: 1
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    volumes:
+      - .:/app:cached
+      - ./data:/data:rw
+      - uv-cache:/root/.cache/uv:rw
+      - pip-cache:/root/.cache/pip:rw
+    networks:
+      - ohlcv-network
+    ports:
+      - "8888:8888"  # Jupyter
+      - "5678:5678"  # Debugger
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+    profiles:
+      - dev
+
+  # ============================================
+  # Test Runner Service
+  # ============================================
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.optimized
+      target: test
+      args:
+        <<: *build-args
+    image: ohlcv-rag:${IMAGE_TAG:-latest}-test
+    container_name: ohlcv-rag-test
+    environment:
+      <<: *common-env
+      PYTEST_ADDOPTS: "-v --tb=short --color=yes"
+      COVERAGE_FILE: /tmp/.coverage
+    volumes:
+      - .:/app:ro
+      - test-results:/app/test-results:rw
+      - pytest-cache:/app/.pytest_cache:rw
+    networks:
+      - ohlcv-network
+    command: ["python", "-m", "pytest", "tests/", "--cov=src", "--cov-report=html:/app/test-results/coverage"]
+    profiles:
+      - test
+
+  # ============================================
+  # ChromaDB Service (Default Vector Store)
+  # ============================================
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: ohlcv-chromadb
+    environment:
+      IS_PERSISTENT: "TRUE"
+      PERSIST_DIRECTORY: /chroma/chroma
+      ANONYMIZED_TELEMETRY: "FALSE"
+      ALLOW_RESET: "TRUE"
+      CHROMA_SERVER_AUTH_PROVIDER: "chromadb.auth.token.TokenAuthServerProvider"
+      CHROMA_SERVER_AUTH_CREDENTIALS: ${CHROMA_AUTH_TOKEN:-test-token}
+    volumes:
+      - chromadb-data:/chroma/chroma:rw
+    networks:
+      - ohlcv-network
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+
+  # ============================================
+  # Qdrant Service (Alternative Vector Store)
+  # ============================================
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: ohlcv-qdrant
+    environment:
+      QDRANT__SERVICE__HTTP_PORT: 6333
+      QDRANT__SERVICE__GRPC_PORT: 6334
+      QDRANT__LOG_LEVEL: INFO
+      QDRANT__SERVICE__ENABLE_TLS: false
+    volumes:
+      - qdrant-data:/qdrant/storage:rw
+    networks:
+      - ohlcv-network
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    restart: unless-stopped
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+    profiles:
+      - qdrant
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+
+  # ============================================
+  # Weaviate Service (Alternative Vector Store)
+  # ============================================
+  weaviate:
+    image: semitechnologies/weaviate:latest
+    container_name: ohlcv-weaviate
+    environment:
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: "true"
+      PERSISTENCE_DATA_PATH: /var/lib/weaviate
+      DEFAULT_VECTORIZER_MODULE: none
+      ENABLE_MODULES: ""
+      CLUSTER_HOSTNAME: node1
+      AUTOSCHEMA_ENABLED: "false"
+      QUERY_MAXIMUM_RESULTS: 10000
+      DISK_USE_WARNING_PERCENTAGE: 80
+      DISK_USE_READONLY_PERCENTAGE: 90
+    volumes:
+      - weaviate-data:/var/lib/weaviate:rw
+    networks:
+      - ohlcv-network
+    ports:
+      - "8080:8080"
+      - "50051:50051"  # gRPC
+    restart: unless-stopped
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "curl", "-f", "http://localhost:8080/v1/.well-known/ready"]
+    profiles:
+      - weaviate
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
+
+  # ============================================
+  # PostgreSQL Service (Optional Metadata Store)
+  # ============================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: ohlcv-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ohlcv}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ohlcv123}
+      POSTGRES_DB: ${POSTGRES_DB:-ohlcv_rag}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.utf8"
+      POSTGRES_HOST_AUTH_METHOD: md5
+    volumes:
+      - postgres-data:/var/lib/postgresql/data:rw
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - ohlcv-network
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ohlcv} -d ${POSTGRES_DB:-ohlcv_rag}"]
+    profiles:
+      - full
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
+
+  # ============================================
+  # Redis Service (Optional Cache)
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: ohlcv-redis
+    volumes:
+      - redis-data:/data:rw
+    networks:
+      - ohlcv-network
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --save 60 1000
+      --save 300 10
+      --save 900 1
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "redis-cli", "ping"]
+    profiles:
+      - full
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
+
+  # ============================================
+  # Nginx Reverse Proxy (Optional)
+  # ============================================
+  nginx:
+    image: nginx:alpine
+    container_name: ohlcv-nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - ohlcv-network
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+    restart: unless-stopped
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+    profiles:
+      - production
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+
+# ============================================
+# Networks Configuration
+# ============================================
+networks:
+  ohlcv-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
+          ip_range: 172.28.5.0/24
+          gateway: 172.28.0.1
+
+# ============================================
+# Volumes Configuration
+# ============================================
+volumes:
+  chromadb-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/chromadb
+  
+  qdrant-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/qdrant
+  
+  weaviate-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/weaviate
+  
+  postgres-data:
+    driver: local
+  
+  redis-data:
+    driver: local
+  
+  uv-cache:
+    driver: local
+  
+  pip-cache:
+    driver: local
+  
+  pytest-cache:
+    driver: local
+  
+  test-results:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./test-results

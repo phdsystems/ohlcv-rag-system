@@ -1,0 +1,220 @@
+# syntax=docker/dockerfile:1.4
+# Optimized Multi-stage Dockerfile with BuildKit features
+
+# ============================================
+# Base stage with common system dependencies
+# ============================================
+FROM python:3.11-slim AS base
+
+# Install only essential system dependencies
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# ============================================
+# UV installer stage (cached separately)
+# ============================================
+FROM base AS uv-installer
+
+# Install UV in a separate stage for better caching
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:${PATH}"
+
+# ============================================
+# Dependencies stage
+# ============================================
+FROM uv-installer AS dependencies
+
+WORKDIR /tmp
+
+# Copy only dependency files first (better layer caching)
+COPY pyproject.toml uv.lock* ./
+
+# Install dependencies with aggressive caching
+RUN --mount=type=cache,target=/root/.cache/uv,sharing=locked \
+    --mount=type=cache,target=/tmp/.uv,sharing=locked \
+    uv sync --frozen --no-install-project --no-dev
+
+# ============================================
+# Builder stage for application
+# ============================================
+FROM base AS builder
+
+WORKDIR /app
+
+# Copy application code
+COPY src/ ./src/
+COPY main.py main_oop.py ./
+COPY .env.example ./
+
+# Create necessary directories with proper structure
+RUN mkdir -p data/{chroma_db,csv,faiss_db,qdrant_db} logs
+
+# ============================================
+# Runtime base with minimal footprint
+# ============================================
+FROM python:3.11-slim AS runtime-base
+
+# Install only runtime dependencies
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user with specific UID for consistency
+RUN groupadd -r -g 1000 ohlcv && \
+    useradd -r -u 1000 -g ohlcv -m -s /bin/bash ohlcv && \
+    mkdir -p /app /data && \
+    chown -R ohlcv:ohlcv /app /data
+
+# ============================================
+# Runtime stage (default)
+# ============================================
+FROM runtime-base AS runtime
+
+WORKDIR /app
+
+# Copy Python environment from dependencies stage
+COPY --from=dependencies --chown=ohlcv:ohlcv /tmp/.venv /opt/venv
+
+# Set Python environment
+ENV PATH="/opt/venv/bin:${PATH}" \
+    VIRTUAL_ENV=/opt/venv \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONHASHSEED=random \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    UV_SYSTEM_PYTHON=1
+
+# Copy application from builder
+COPY --from=builder --chown=ohlcv:ohlcv /app /app
+
+# Copy documentation (lightweight)
+COPY --chown=ohlcv:ohlcv docs/ ./docs/
+COPY --chown=ohlcv:ohlcv README.md ./
+
+USER ohlcv
+
+# Application environment
+ENV DATA_DIR="/data" \
+    LOG_LEVEL=INFO
+
+VOLUME ["/data"]
+
+# Optimized health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD python -c "import sys; import src; sys.exit(0)" || exit 1
+
+ENTRYPOINT ["python"]
+CMD ["main_oop.py", "status"]
+
+# ============================================
+# Development stage with tools
+# ============================================
+FROM runtime AS development
+
+USER root
+
+# Install development tools with caching
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
+    vim \
+    git \
+    htop \
+    iputils-ping \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install UV for development
+COPY --from=uv-installer /root/.local/bin/uv /usr/local/bin/uv
+
+# Install development Python tools
+RUN --mount=type=cache,target=/root/.cache/uv,sharing=locked \
+    uv tool install --python python3.11 ipython && \
+    uv tool install --python python3.11 jupyter && \
+    uv tool install --python python3.11 pytest && \
+    uv tool install --python python3.11 black && \
+    uv tool install --python python3.11 ruff && \
+    uv tool install --python python3.11 mypy
+
+ENV PATH="/root/.local/bin:${PATH}"
+
+USER ohlcv
+
+EXPOSE 8888
+
+CMD ["python", "main_oop.py", "interactive"]
+
+# ============================================
+# Production stage (Alpine-based, smallest)
+# ============================================
+FROM python:3.11-alpine AS production
+
+# Install minimal runtime dependencies
+RUN apk add --no-cache \
+    libstdc++ \
+    libgomp \
+    && rm -rf /var/cache/apk/*
+
+# Create non-root user
+RUN addgroup -g 1000 -S ohlcv && \
+    adduser -u 1000 -S -G ohlcv -h /home/ohlcv ohlcv && \
+    mkdir -p /app /data && \
+    chown -R ohlcv:ohlcv /app /data
+
+WORKDIR /app
+
+# Copy Python environment (Alpine compatible)
+COPY --from=dependencies /tmp/.venv /opt/venv
+
+# Set minimal environment
+ENV PATH="/opt/venv/bin:${PATH}" \
+    VIRTUAL_ENV=/opt/venv \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+# Copy only essential application files
+COPY --from=builder --chown=ohlcv:ohlcv /app/src ./src
+COPY --from=builder --chown=ohlcv:ohlcv /app/main_oop.py ./
+
+USER ohlcv
+
+VOLUME ["/data"]
+
+# Minimal health check
+HEALTHCHECK --interval=60s --timeout=3s --retries=3 \
+    CMD python -c "import sys; sys.exit(0)" || exit 1
+
+ENTRYPOINT ["python", "main_oop.py"]
+
+# ============================================
+# Test stage for CI/CD
+# ============================================
+FROM runtime AS test
+
+USER root
+
+# Install test dependencies
+COPY --from=uv-installer /root/.local/bin/uv /usr/local/bin/uv
+
+WORKDIR /app
+
+# Copy test files
+COPY --chown=ohlcv:ohlcv tests/ ./tests/
+COPY --chown=ohlcv:ohlcv pytest.ini ./
+COPY --chown=ohlcv:ohlcv pyproject.toml ./
+
+# Install test dependencies
+RUN --mount=type=cache,target=/root/.cache/uv,sharing=locked \
+    uv sync --frozen --no-install-project
+
+USER ohlcv
+
+# Run tests by default
+CMD ["python", "-m", "pytest", "-v"]
