@@ -49,15 +49,9 @@ make up
 ### Technical Documentation
 - **[Architecture Overview](docs/ARCHITECTURE.md)** - System design and components
 - **[Docker Architecture](docs/architecture/docker/)** - Container strategies and optimizations
-  - [Optimization Strategy](docs/architecture/docker/optimization-strategy.md) - Build optimization
-  - [Security Strategy](docs/architecture/docker/security-strategy.md) - Container security
-  - [CI/CD Pipeline](docs/architecture/docker/cicd-pipeline-strategy.md) - Automation
 - **[API Reference](docs/API_REFERENCE.md)** - Detailed API documentation
 - **[RAG Pipeline](docs/RAG_PIPELINE.md)** - Understanding the RAG architecture
-- **[Visual RAG Guide](docs/RAG_PIPELINE_VISUAL.md)** - Visual explanations
 - **[Vector Stores](docs/VECTOR_STORES.md)** - Database options and configuration
-- **[Data Adapters](docs/DATA_ADAPTERS.md)** - Adding data sources
-- **[Coding Standards](docs/CODING_STANDARDS.md)** - Development practices
 
 ## Basic Usage
 
@@ -67,18 +61,15 @@ python main_oop.py setup --tickers AAPL MSFT GOOGL
 
 # Query the system
 python main_oop.py query "What are the recent trends in tech stocks?"
-
-# Run tests
-make test
 ```
 
-For detailed usage instructions, see the [Usage Guide](docs/guides/USAGE.md).
+See [Usage Guide](docs/guides/USAGE.md) for detailed instructions.
 
 ## Requirements
 
 - Python 3.11+
 - Docker (optional)
-- OpenAI API key
+- OpenAI API key (or use mock provider)
 
 ## License
 
