@@ -23,6 +23,15 @@ This directory contains comprehensive documentation for Docker containerization 
    - Migration guide from pip
    - Troubleshooting guide
 
+3. **[Advanced Docker Strategies](./advanced-strategies.md)**
+   - Container orchestration (Swarm/K8s)
+   - Volume management and performance
+   - Networking optimization
+   - Secret management
+   - Logging and monitoring
+   - CI/CD pipeline optimization
+   - GPU support and dev containers
+
 ## Quick Reference
 
 ### Key Achievements
