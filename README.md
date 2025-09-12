@@ -48,6 +48,10 @@ make up
 
 ### Technical Documentation
 - **[Architecture Overview](docs/ARCHITECTURE.md)** - System design and components
+- **[Docker Architecture](docs/architecture/docker/)** - Container strategies and optimizations
+  - [Optimization Strategy](docs/architecture/docker/optimization-strategy.md) - Build optimization
+  - [Security Strategy](docs/architecture/docker/security-strategy.md) - Container security
+  - [CI/CD Pipeline](docs/architecture/docker/cicd-pipeline-strategy.md) - Automation
 - **[API Reference](docs/API_REFERENCE.md)** - Detailed API documentation
 - **[RAG Pipeline](docs/RAG_PIPELINE.md)** - Understanding the RAG architecture
 - **[Visual RAG Guide](docs/RAG_PIPELINE_VISUAL.md)** - Visual explanations

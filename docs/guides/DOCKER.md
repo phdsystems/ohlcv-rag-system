@@ -519,3 +519,15 @@ make status
 ### Full Command List
 
 Run `make help` to see all available commands with descriptions.
+
+## Advanced Documentation
+
+For detailed Docker strategies and best practices, see:
+
+### Architecture Documentation
+- **[Docker Optimization Strategy](../architecture/docker/optimization-strategy.md)** - Multi-stage builds, caching, parallelism
+- **[UV Build Strategy](../architecture/docker/uv-build-strategy.md)** - Fast Python package management
+- **[Container Orchestration](../architecture/docker/orchestration-strategy.md)** - Kubernetes and Swarm deployment
+- **[Monitoring & Logging](../architecture/docker/monitoring-logging-strategy.md)** - Observability stack
+- **[CI/CD Pipeline](../architecture/docker/cicd-pipeline-strategy.md)** - Automated builds and deployments
+- **[Security Strategy](../architecture/docker/security-strategy.md)** - Container hardening and compliance
