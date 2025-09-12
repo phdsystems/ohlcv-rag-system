@@ -2,6 +2,7 @@
 
 import os
 import sys
+import argparse
 from dotenv import load_dotenv
 from src.data_ingestion import OHLCVDataIngestion
 from src.vector_store import OHLCVVectorStore
@@ -10,6 +11,63 @@ from src.rag_pipeline import OHLCVRAGPipeline
 import json
 
 load_dotenv()
+
+def initialize_data_ingestion(tickers, source="yahoo", period="1y", interval="1d", adapter_config=None):
+    """Initialize data ingestion component"""
+    if adapter_config is None:
+        adapter_config = {}
+    
+    return OHLCVDataIngestion(
+        tickers=tickers,
+        source=source,
+        period=period,
+        interval=interval,
+        adapter_config=adapter_config
+    )
+
+def initialize_vector_store():
+    """Initialize vector store component"""
+    return OHLCVVectorStore()
+
+def process_query(pipeline, query):
+    """Process a query through the RAG pipeline"""
+    if not pipeline:
+        raise ValueError("Pipeline not initialized")
+    return pipeline.query(query)
+
+def safe_execute(func, *args, **kwargs):
+    """Safely execute a function with error handling"""
+    try:
+        return func(*args, **kwargs)
+    except Exception as e:
+        print(f"Error executing function: {e}")
+        return None
+
+def parse_arguments():
+    """Parse command line arguments"""
+    parser = argparse.ArgumentParser(description='OHLCV RAG System')
+    parser.add_argument('--tickers', type=str, default='AAPL,MSFT,GOOGL',
+                        help='Comma-separated list of ticker symbols')
+    parser.add_argument('--period', type=str, default='1y',
+                        help='Data period (1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max)')
+    parser.add_argument('--interval', type=str, default='1d',
+                        help='Data interval (1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo)')
+    parser.add_argument('--source', type=str, default='yahoo',
+                        help='Data source (yahoo, alpha_vantage, polygon, csv)')
+    return parser.parse_args()
+
+def get_demo_queries():
+    """Get demo queries for testing"""
+    return [
+        "What are the recent trends in tech stocks?",
+        "Show me periods with high volatility",
+        "Find stocks with RSI above 70",
+        "Identify potential breakout patterns",
+        "What was the performance during the last quarter?",
+        "Compare the momentum indicators across different stocks",
+        "Find support and resistance levels",
+        "Show me bearish divergences in the data"
+    ]
 
 def setup_system():
     print("=" * 60)

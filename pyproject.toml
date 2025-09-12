@@ -32,6 +32,9 @@ dependencies = [
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
 [tool.uv]
 managed = true
 dev-dependencies = [
@@ -43,5 +46,56 @@ dev-dependencies = [
     "ipython>=8.14.0",
 ]
 
+# Group dependencies for different use cases
+[tool.uv.sources]
+# Use CPU-only PyTorch to avoid huge CUDA downloads
+torch = { index = "pytorch-cpu" }
+torchvision = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple"
+
 [tool.uv.pip]
 index-url = "https://pypi.org/simple"
+
+# Define dependency groups for different scenarios
+[dependency-groups]
+# Minimal test dependencies (for quick unit tests)
+test-minimal = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.1",
+]
+
+# Full test dependencies (includes integration test requirements)
+test = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.1",
+    "pytest-asyncio>=0.21.0",
+    "pytest-timeout>=2.1.0",
+    "testcontainers>=3.7.0",
+]
+
+# Development tools
+dev = [
+    "black>=23.7.0",
+    "ruff>=0.0.287",
+    "mypy>=1.5.1",
+    "ipython>=8.14.0",
+    "pre-commit>=3.3.3",
+    "pytest-asyncio>=1.2.0",
+]
+
+# Documentation dependencies
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.1.0",
+    "mkdocstrings[python]>=0.22.0",
+]

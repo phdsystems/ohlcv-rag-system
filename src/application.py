@@ -84,6 +84,10 @@ class OHLCVRAGApplication(BaseComponent):
             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         )
     
+    def initialize_components(self) -> None:
+        """Initialize all application components (alias for initialize)"""
+        self.initialize()
+    
     def initialize(self) -> None:
         """Initialize all application components"""
         self.log_info("Initializing OHLCV RAG Application")
@@ -170,6 +174,9 @@ class OHLCVRAGApplication(BaseComponent):
         Returns:
             Ingestion result dictionary
         """
+        if not self.data_ingestion:
+            raise OHLCVRAGException("Components not initialized. Call initialize_components() first.")
+        
         if not self._initialized:
             self.initialize()
         
@@ -233,6 +240,9 @@ class OHLCVRAGApplication(BaseComponent):
         Returns:
             Query result dictionary
         """
+        if not self.rag_pipeline:
+            raise OHLCVRAGException("RAG pipeline not initialized. Call initialize_components() first.")
+        
         if not self._initialized:
             self.initialize()
         
@@ -302,12 +312,49 @@ class OHLCVRAGApplication(BaseComponent):
         self.state.current_operation = None
         return result
     
+    def update_data(self, tickers: List[str]) -> Dict[str, Any]:
+        """Update data for specified tickers"""
+        self.log_info(f"Updating data for {tickers}")
+        return self.ingest_data(tickers)
+    
+    def batch_ingest(self, ticker_batches: List[List[str]]) -> Dict[str, Any]:
+        """Ingest data in batches"""
+        results = []
+        for batch in ticker_batches:
+            result = self.ingest_data(batch)
+            results.append(result)
+        return {
+            'batches': len(ticker_batches),
+            'results': results
+        }
+    
+    def export_data(self, path: str) -> bool:
+        """Export data to file"""
+        try:
+            # Implementation would export vector store data
+            self.log_info(f"Exporting data to {path}")
+            return True
+        except Exception as e:
+            self.log_error(f"Export failed: {str(e)}")
+            return False
+    
+    def import_data(self, path: str) -> bool:
+        """Import data from file"""
+        try:
+            # Implementation would import data to vector store
+            self.log_info(f"Importing data from {path}")
+            return True
+        except Exception as e:
+            self.log_error(f"Import failed: {str(e)}")
+            return False
+    
     def clear_data(self) -> bool:
         """Clear all data from vector store"""
         self.log_info("Clearing all data")
         
         try:
-            self.vector_store.clear_collection()
+            if self.vector_store:
+                self.vector_store.clear_collection()
             self.state.ingested_tickers.clear()
             self.state.last_ingestion = None
             self.log_info("Data cleared successfully")

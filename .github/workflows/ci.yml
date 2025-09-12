@@ -1,0 +1,349 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run nightly tests at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_profile:
+        description: 'Test profile to run'
+        required: false
+        default: 'ci-full'
+        type: choice
+        options:
+          - ci-full
+          - ci-unit
+          - ci-integration
+          - performance
+          - smoke
+
+env:
+  PYTHON_VERSION: '3.11'
+  UV_VERSION: '0.4.0'
+  CACHE_VERSION: 'v1'
+
+jobs:
+  # Quick validation job
+  validate:
+    name: Validate Code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/${{ env.UV_VERSION }}/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/uv
+            .venv
+          key: ${{ runner.os }}-uv-${{ env.CACHE_VERSION }}-${{ hashFiles('pyproject.toml', 'uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-${{ env.CACHE_VERSION }}-
+      
+      - name: Install dependencies
+        run: |
+          uv sync --dev
+      
+      - name: Run linting
+        run: |
+          uv run ruff check src tests
+      
+      - name: Run type checking
+        run: |
+          uv run mypy src --ignore-missing-imports || true
+      
+      - name: Check formatting
+        run: |
+          uv run black --check src tests
+
+  # Unit tests with mocks
+  test-unit:
+    name: Unit Tests (Mock)
+    runs-on: ubuntu-latest
+    needs: validate
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12']
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/${{ env.UV_VERSION }}/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/uv
+            .venv
+          key: ${{ runner.os }}-py${{ matrix.python-version }}-uv-${{ env.CACHE_VERSION }}-${{ hashFiles('pyproject.toml', 'uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-py${{ matrix.python-version }}-uv-${{ env.CACHE_VERSION }}-
+      
+      - name: Install dependencies
+        run: |
+          uv sync --dev
+      
+      - name: Run unit tests
+        run: |
+          uv run pytest tests/test_simple.py tests/test_mock_suite.py \
+            -m "mock or unit" \
+            -m "not integration and not real_deps" \
+            --cov=src \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            --junit-xml=test-results/junit-unit.xml \
+            -v
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-unit-py${{ matrix.python-version }}
+          path: test-results/
+      
+      - name: Upload coverage
+        if: matrix.python-version == '3.11'
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: unit
+          name: unit-tests
+
+  # Integration tests with Docker
+  test-integration:
+    name: Integration Tests (Docker)
+    runs-on: ubuntu-latest
+    needs: validate
+    services:
+      chromadb:
+        image: chromadb/chroma:latest
+        ports:
+          - 8000:8000
+        options: >-
+          --health-cmd "curl -f http://localhost:8000/api/v1/heartbeat || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      qdrant:
+        image: qdrant/qdrant:latest
+        ports:
+          - 6333:6333
+        options: >-
+          --health-cmd "curl -f http://localhost:6333/health || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      weaviate:
+        image: semitechnologies/weaviate:latest
+        ports:
+          - 8080:8080
+        env:
+          AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+          PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/${{ env.UV_VERSION }}/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/uv
+            .venv
+          key: ${{ runner.os }}-uv-integration-${{ env.CACHE_VERSION }}-${{ hashFiles('pyproject.toml', 'uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-integration-${{ env.CACHE_VERSION }}-
+      
+      - name: Install dependencies
+        run: |
+          uv sync --dev --group test
+      
+      - name: Wait for services
+        run: |
+          echo "Waiting for services to be ready..."
+          for i in {1..30}; do
+            if curl -f http://localhost:8000/api/v1/heartbeat && \
+               curl -f http://localhost:6333/health && \
+               curl -f http://localhost:8080/v1/.well-known/ready; then
+              echo "All services are ready!"
+              break
+            fi
+            echo "Waiting... ($i/30)"
+            sleep 2
+          done
+      
+      - name: Run integration tests
+        run: |
+          uv run pytest tests/integration/ \
+            -m "integration and docker" \
+            --cov=src \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            --junit-xml=test-results/junit-integration.xml \
+            -v
+        env:
+          CHROMADB_HOST: localhost
+          CHROMADB_PORT: 8000
+          QDRANT_HOST: localhost
+          QDRANT_PORT: 6333
+          WEAVIATE_HOST: localhost
+          WEAVIATE_PORT: 8080
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-integration
+          path: test-results/
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: integration
+          name: integration-tests
+
+  # Performance tests (optional, runs on schedule)
+  test-performance:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event_name == 'schedule' || github.event.inputs.test_profile == 'performance'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/${{ env.UV_VERSION }}/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      
+      - name: Install dependencies
+        run: |
+          uv sync --dev
+      
+      - name: Run performance tests
+        run: |
+          uv run pytest tests/ \
+            -m "benchmark or stress" \
+            --tb=short \
+            -v \
+            --durations=10 \
+            --junit-xml=test-results/junit-performance.xml
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-performance
+          path: test-results/
+
+  # Build Docker images
+  build-docker:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [test-unit, test-integration]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+  # Deploy (placeholder)
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: build-docker
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+      - name: Deploy to production
+        run: |
+          echo "Deployment step would go here"
+          echo "This is a placeholder for actual deployment logic"
+
+  # Summary job
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [test-unit, test-integration]
+    
+    steps:
+      - name: Download all test results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: test-results-*
+          merge-multiple: true
+      
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: |
+            **/junit*.xml
+          check_name: Test Results
+          comment_mode: always

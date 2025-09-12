@@ -29,20 +29,22 @@ make up
 
 ## Documentation
 
-- **[Installation Guide](docs/INSTALLATION.md)** - Setup instructions and requirements
-- **[Usage Guide](docs/USAGE.md)** - Commands, API usage, and examples
-- **[Testing Guide](docs/TESTING.md)** - Running tests and writing test cases
-- **[Deployment Guide](docs/DEPLOYMENT.md)** - Production deployment options
+### Guides
+- **[Installation Guide](docs/guides/INSTALLATION.md)** - Setup instructions and requirements
+- **[Getting Started](docs/guides/GETTING_STARTED.md)** - Quick start tutorial
+- **[Usage Guide](docs/guides/USAGE.md)** - Commands, API usage, and examples
+- **[Testing Guide](docs/guides/TESTING.md)** - Running tests and writing test cases
+- **[Deployment Guide](docs/guides/DEPLOYMENT.md)** - Production deployment options
+- **[Docker Guide](docs/guides/DOCKER.md)** - Container configuration
+- **[Optimization Guide](docs/guides/OPTIMIZATION_GUIDE.md)** - Dependency and performance optimizations
+
+### Technical Documentation
 - **[Architecture Overview](docs/ARCHITECTURE.md)** - System design and components
 - **[API Reference](docs/API_REFERENCE.md)** - Detailed API documentation
-
-### Deep Dives
-
 - **[RAG Pipeline](docs/RAG_PIPELINE.md)** - Understanding the RAG architecture
 - **[Visual RAG Guide](docs/RAG_PIPELINE_VISUAL.md)** - Visual explanations
 - **[Vector Stores](docs/VECTOR_STORES.md)** - Database options and configuration
 - **[Data Adapters](docs/DATA_ADAPTERS.md)** - Adding data sources
-- **[Docker Guide](docs/DOCKER.md)** - Container configuration
 - **[Coding Standards](docs/CODING_STANDARDS.md)** - Development practices
 
 ## Basic Usage
@@ -58,7 +60,7 @@ python main_oop.py query "What are the recent trends in tech stocks?"
 make test
 ```
 
-For detailed usage instructions, see the [Usage Guide](docs/USAGE.md).
+For detailed usage instructions, see the [Usage Guide](docs/guides/USAGE.md).
 
 ## Requirements
 

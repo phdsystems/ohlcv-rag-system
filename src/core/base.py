@@ -58,6 +58,10 @@ class BaseComponent(ABC):
         """Log warning message"""
         self._logger.warning(f"[{self.name}] {message}")
     
+    def log_debug(self, message: str) -> None:
+        """Log debug message"""
+        self._logger.debug(f"[{self.name}] {message}")
+    
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(name='{self.name}', initialized={self._initialized})"
 

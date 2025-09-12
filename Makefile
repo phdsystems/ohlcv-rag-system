@@ -72,17 +72,47 @@ clean: ## Clean up Docker resources
 .PHONY: test
 test: ## Run unit tests
 	@echo "$(BLUE)Running unit tests...$(NC)"
-	@python -m pytest tests/test_simple.py -v
+	@uv run pytest tests/test_simple.py -v
 
 .PHONY: test-all
 test-all: ## Run all tests with coverage
 	@echo "$(BLUE)Running all tests with coverage...$(NC)"
-	@python -m pytest tests/ -v --cov=src --cov-report=term-missing || true
+	@uv run pytest tests/ -v --cov=src --cov-report=term-missing || true
 
 .PHONY: test-simple
 test-simple: ## Run simple mock-based tests
 	@echo "$(BLUE)Running simple tests...$(NC)"
-	@python -m pytest tests/test_simple.py -v
+	@uv run pytest tests/test_simple.py -v
+
+.PHONY: test-quick
+test-quick: ## Run quick tests with minimal dependencies
+	@echo "$(BLUE)Running quick tests...$(NC)"
+	@./scripts/test-quick.sh
+
+.PHONY: test-mock
+test-mock: ## Run comprehensive mock test suite
+	@echo "$(BLUE)Running mock test suite...$(NC)"
+	@./scripts/test-profiles.sh dev-mock
+
+.PHONY: test-dev
+test-dev: ## Run development tests (quick mock tests)
+	@echo "$(BLUE)Running development tests...$(NC)"
+	@./scripts/test-profiles.sh dev-quick
+
+.PHONY: test-ci
+test-ci: ## Run CI test suite
+	@echo "$(BLUE)Running CI test suite...$(NC)"
+	@./scripts/test-profiles.sh ci-full
+
+.PHONY: test-profile
+test-profile: ## Run specific test profile (use PROFILE=<name>)
+	@echo "$(BLUE)Running test profile: $(PROFILE)...$(NC)"
+	@./scripts/test-profiles.sh $(PROFILE)
+
+.PHONY: install-optimized
+install-optimized: ## Install with optimized dependencies (CPU-only PyTorch)
+	@echo "$(BLUE)Installing with optimizations...$(NC)"
+	@./scripts/install-optimized.sh
 
 .PHONY: test-install
 test-install: ## Install test dependencies

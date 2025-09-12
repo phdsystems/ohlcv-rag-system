@@ -2,7 +2,7 @@ import os
 from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
 from langchain.prompts import PromptTemplate
-from langchain_openai import ChatOpenAI
+from langchain.llms.base import LLM
 from langchain.schema import Document
 from langchain.chains import LLMChain
 import json
@@ -13,23 +13,73 @@ load_dotenv()
 
 class OHLCVRAGPipeline:
     def __init__(self, vector_store: OHLCVVectorStore, retriever: OHLCVRetriever,
-                 openai_api_key: Optional[str] = None, model: str = "gpt-3.5-turbo"):
+                 llm_provider: str = "openai", api_key: Optional[str] = None, 
+                 model: Optional[str] = None):
         self.vector_store = vector_store
         self.retriever = retriever
         
-        # Initialize LLM
-        api_key = openai_api_key or os.getenv("OPENAI_API_KEY")
-        if not api_key:
-            raise ValueError("OpenAI API key not provided. Set OPENAI_API_KEY environment variable.")
-            
-        self.llm = ChatOpenAI(
-            api_key=api_key,
-            model=model,
-            temperature=0.1
-        )
+        # Initialize LLM based on provider
+        self.llm = self._initialize_llm(llm_provider, api_key, model)
         
         # Define prompts for different query types
         self.prompts = self._create_prompts()
+    
+    def _initialize_llm(self, provider: str, api_key: Optional[str], model: Optional[str]) -> LLM:
+        """Initialize LLM based on provider"""
+        provider = provider.lower()
+        
+        if provider == "openai":
+            try:
+                from langchain_openai import ChatOpenAI
+            except ImportError:
+                raise ImportError("Please install langchain-openai: pip install langchain-openai")
+            
+            api_key = api_key or os.getenv("OPENAI_API_KEY")
+            if not api_key:
+                raise ValueError("OpenAI API key not provided. Set OPENAI_API_KEY environment variable.")
+            return ChatOpenAI(
+                api_key=api_key,
+                model=model or "gpt-3.5-turbo",
+                temperature=0.1
+            )
+        
+        elif provider == "anthropic":
+            try:
+                from langchain_anthropic import ChatAnthropic
+            except ImportError:
+                raise ImportError("Please install langchain-anthropic: pip install langchain-anthropic")
+            
+            api_key = api_key or os.getenv("ANTHROPIC_API_KEY")
+            if not api_key:
+                raise ValueError("Anthropic API key not provided. Set ANTHROPIC_API_KEY environment variable.")
+            return ChatAnthropic(
+                api_key=api_key,
+                model=model or "claude-3-sonnet-20240229",
+                temperature=0.1
+            )
+        
+        elif provider == "ollama":
+            try:
+                from langchain_community.llms import Ollama
+            except ImportError:
+                raise ImportError("Please install langchain-community: pip install langchain-community")
+            
+            # Ollama runs locally, no API key needed
+            return Ollama(
+                model=model or "llama2",
+                temperature=0.1
+            )
+        
+        elif provider == "mock":
+            # Mock LLM for testing - no external dependencies
+            from unittest.mock import MagicMock
+            mock_llm = MagicMock()
+            mock_llm.invoke.return_value = "Mock response for testing"
+            return mock_llm
+        
+        else:
+            raise ValueError(f"Unsupported LLM provider: {provider}. "
+                           f"Supported: openai, anthropic, ollama, mock")
         
     def _create_prompts(self) -> Dict[str, PromptTemplate]:
         prompts = {}
