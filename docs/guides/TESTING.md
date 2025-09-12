@@ -2,23 +2,39 @@
 
 ## Overview
 
-The OHLCV RAG System includes comprehensive unit and integration tests to ensure reliability and correctness of all components.
+The OHLCV RAG System uses a **hybrid testing strategy** with co-located unit tests and centralized integration tests. For detailed information about our testing philosophy and organization, see the [Testing Strategy](../architecture/testing-strategy.md).
 
 ## Test Structure
 
+Our tests follow a hybrid approach:
+
+### Co-located Unit Tests (in `src/`)
+```
+src/
+├── application_test.py              # Unit tests next to source
+├── rag_pipeline_test.py            
+├── core/
+│   └── *_test.py                   # Module-specific tests
+├── data_adapters/
+│   └── *_test.py                   
+└── vector_stores/
+    └── *_test.py                   
+```
+
+### Centralized Integration & E2E Tests (in `tests/`)
 ```
 tests/
-├── test_simple.py         # Simple mock-based unit tests
-├── test_main.py           # Main application tests
-├── test_adapters.py       # Data adapter tests
-├── test_vector_stores.py  # Vector store tests
-├── test_rag_pipeline.py   # RAG pipeline tests
-├── test_application.py    # Application layer tests
-├── integration/           # Integration tests
+├── integration/                     # Integration tests
 │   ├── test_chromadb_integration.py
 │   ├── test_weaviate_integration.py
-│   └── test_qdrant_integration.py
-└── conftest.py           # Pytest fixtures
+│   ├── test_qdrant_integration.py
+│   └── test_end_to_end.py
+├── e2e/                            # End-to-end tests
+│   ├── test_e2e_simple.py
+│   └── test_testcontainers.py
+├── conftest.py                     # Shared fixtures
+├── pytest.ini                      # Pytest configuration
+└── .coveragerc                     # Coverage configuration
 ```
 
 ## Running Tests

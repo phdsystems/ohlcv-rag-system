@@ -35,6 +35,7 @@ See **[QUICKSTART.md](docs/QUICKSTART.md)** for more options or the **[Getting S
 
 ### Technical Documentation
 - **[Architecture Overview](docs/ARCHITECTURE.md)** - System design and components
+- **[Testing Strategy](docs/architecture/testing-strategy.md)** - Hybrid testing approach
 - **[Docker Architecture](docs/architecture/docker/)** - Container strategies and optimizations
 - **[API Reference](docs/API_REFERENCE.md)** - Detailed API documentation
 - **[RAG Pipeline](docs/RAG_PIPELINE.md)** - Understanding the RAG architecture
