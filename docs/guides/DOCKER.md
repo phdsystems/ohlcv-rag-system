@@ -207,7 +207,7 @@ docker-compose --profile chromadb up -d
 docker-compose logs -f ohlcv-rag
 
 # Execute command in running container
-docker-compose exec ohlcv-rag python main_oop.py status
+docker-compose exec ohlcv-rag python main.py status
 
 # Stop services
 docker-compose down

@@ -44,10 +44,10 @@ See **[QUICKSTART.md](QUICKSTART.md)** for more options or the **[Getting Starte
 
 ```bash
 # Setup with initial data
-python main_oop.py setup --tickers AAPL MSFT GOOGL
+python main.py setup --tickers AAPL MSFT GOOGL
 
 # Query the system
-python main_oop.py query "What are the recent trends in tech stocks?"
+python main.py query "What are the recent trends in tech stocks?"
 ```
 
 See [Usage Guide](docs/guides/USAGE.md) for detailed instructions.

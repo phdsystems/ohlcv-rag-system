@@ -52,7 +52,7 @@ WORKDIR /app
 
 # Copy application code
 COPY src/ ./src/
-COPY main_oop.py ./
+COPY main.py ./
 COPY .env.example ./
 
 # Create necessary directories with proper structure
@@ -116,7 +116,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD python -c "import sys; import src; sys.exit(0)" || exit 1
 
 ENTRYPOINT ["python"]
-CMD ["main_oop.py", "status"]
+CMD ["main.py", "status"]
 
 # ============================================
 # Development stage with tools
@@ -159,7 +159,7 @@ USER ohlcv
 
 EXPOSE 8888
 
-CMD ["python", "main_oop.py", "interactive"]
+CMD ["python", "main.py", "interactive"]
 
 # ============================================
 # Production stage (Alpine-based, smallest)
@@ -191,7 +191,7 @@ ENV PATH="/opt/venv/bin:${PATH}" \
 
 # Copy only essential application files
 COPY --from=builder --chown=ohlcv:ohlcv /app/src ./src
-COPY --from=builder --chown=ohlcv:ohlcv /app/main_oop.py ./
+COPY --from=builder --chown=ohlcv:ohlcv /app/main.py ./
 
 USER ohlcv
 
@@ -201,7 +201,7 @@ VOLUME ["/data"]
 HEALTHCHECK --interval=60s --timeout=3s --retries=3 \
     CMD python -c "import sys; sys.exit(0)" || exit 1
 
-ENTRYPOINT ["python", "main_oop.py"]
+ENTRYPOINT ["python", "main.py"]
 
 # ============================================
 # Test stage for CI/CD

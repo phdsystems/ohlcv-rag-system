@@ -183,7 +183,6 @@ azure-pipelines.yml
 # Keep only essential files
 !src/
 !main.py
-!main_oop.py
 !pyproject.toml
 !README.md
 !docs/

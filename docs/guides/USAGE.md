@@ -4,13 +4,13 @@
 
 ```bash
 # Setup with initial data
-python main_oop.py setup --tickers AAPL MSFT GOOGL
+python main.py setup --tickers AAPL MSFT GOOGL
 
 # Query the system
-python main_oop.py query "What are the recent trends in tech stocks?"
+python main.py query "What are the recent trends in tech stocks?"
 
 # Interactive mode
-python main_oop.py interactive
+python main.py interactive
 ```
 
 ## Command Line Interface
@@ -22,16 +22,16 @@ Initialize the system with market data:
 
 ```bash
 # Basic setup with default tickers
-python main_oop.py setup
+python main.py setup
 
 # Setup with specific tickers
-python main_oop.py setup --tickers AAPL MSFT GOOGL AMZN TSLA
+python main.py setup --tickers AAPL MSFT GOOGL AMZN TSLA
 
 # Setup with date range
-python main_oop.py setup --tickers AAPL --start-date 2023-01-01 --end-date 2024-01-01
+python main.py setup --tickers AAPL --start-date 2023-01-01 --end-date 2024-01-01
 
 # Setup with specific data source
-python main_oop.py setup --source alphavantage --tickers AAPL
+python main.py setup --source alphavantage --tickers AAPL
 ```
 
 #### Query Command
@@ -39,16 +39,16 @@ Query the RAG system for insights:
 
 ```bash
 # Simple query
-python main_oop.py query "What is the trend for AAPL?"
+python main.py query "What is the trend for AAPL?"
 
 # Technical analysis query
-python main_oop.py query "Show me RSI and MACD indicators for MSFT" --query-type technical
+python main.py query "Show me RSI and MACD indicators for MSFT" --query-type technical
 
 # Pattern recognition query
-python main_oop.py query "Find bullish patterns in tech stocks" --query-type pattern
+python main.py query "Find bullish patterns in tech stocks" --query-type pattern
 
 # Comparison query
-python main_oop.py query "Compare AAPL and MSFT performance" --query-type comparison
+python main.py query "Compare AAPL and MSFT performance" --query-type comparison
 ```
 
 #### Analyze Command
@@ -56,23 +56,23 @@ Perform specific analysis tasks:
 
 ```bash
 # Pattern analysis
-python main_oop.py analyze pattern --pattern uptrend --tickers AAPL MSFT
+python main.py analyze pattern --pattern uptrend --tickers AAPL MSFT
 
 # Technical indicator analysis
-python main_oop.py analyze technical --indicators RSI MACD --tickers GOOGL
+python main.py analyze technical --indicators RSI MACD --tickers GOOGL
 
 # Volatility analysis
-python main_oop.py analyze volatility --tickers TSLA --period 30
+python main.py analyze volatility --tickers TSLA --period 30
 
 # Correlation analysis
-python main_oop.py analyze correlation --tickers AAPL MSFT GOOGL
+python main.py analyze correlation --tickers AAPL MSFT GOOGL
 ```
 
 #### Interactive Mode
 Start an interactive session:
 
 ```bash
-python main_oop.py interactive
+python main.py interactive
 
 # In interactive mode:
 > help                          # Show available commands
@@ -88,13 +88,13 @@ Check system status:
 
 ```bash
 # Basic status
-python main_oop.py status
+python main.py status
 
 # Detailed status with statistics
-python main_oop.py status --detailed
+python main.py status --detailed
 
 # Vector store status
-python main_oop.py status --vector-store
+python main.py status --vector-store
 ```
 
 ## Docker Usage
@@ -356,7 +356,7 @@ app.set_max_tokens(2000)  # Response length limit
 ### JSON Output
 
 ```bash
-python main_oop.py query "AAPL trends" --output json
+python main.py query "AAPL trends" --output json
 ```
 
 ```json
@@ -374,13 +374,13 @@ python main_oop.py query "AAPL trends" --output json
 ### CSV Export
 
 ```bash
-python main_oop.py export --format csv --output results.csv
+python main.py export --format csv --output results.csv
 ```
 
 ### Report Generation
 
 ```bash
-python main_oop.py report --ticker AAPL --type comprehensive --output report.pdf
+python main.py report --ticker AAPL --type comprehensive --output report.pdf
 ```
 
 ## Batch Processing

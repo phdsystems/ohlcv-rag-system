@@ -28,10 +28,10 @@ python main.py
 
 ```bash
 # Load sample data
-python main_oop.py setup --tickers AAPL MSFT GOOGL
+python main.py setup --tickers AAPL MSFT GOOGL
 
 # Ask a question
-python main_oop.py query "What are the trends in tech stocks?"
+python main.py query "What are the trends in tech stocks?"
 ```
 
 ## No API Key? No Problem!

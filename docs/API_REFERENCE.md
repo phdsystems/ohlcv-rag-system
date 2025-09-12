@@ -563,7 +563,7 @@ except PipelineError as e:
 
 #### setup
 ```bash
-python main_oop.py setup [options]
+python main.py setup [options]
 ```
 
 **Options:**
@@ -574,7 +574,7 @@ python main_oop.py setup [options]
 
 #### query
 ```bash
-python main_oop.py query "question" [options]
+python main.py query "question" [options]
 ```
 
 **Options:**
@@ -583,7 +583,7 @@ python main_oop.py query "question" [options]
 
 #### analyze
 ```bash
-python main_oop.py analyze <analysis_type> [options]
+python main.py analyze <analysis_type> [options]
 ```
 
 **Options:**
@@ -593,13 +593,13 @@ python main_oop.py analyze <analysis_type> [options]
 
 #### interactive
 ```bash
-python main_oop.py interactive
+python main.py interactive
 ```
 Enter interactive query mode.
 
 #### status
 ```bash
-python main_oop.py status
+python main.py status
 ```
 Show system status.
 

@@ -55,7 +55,7 @@ cp .env.example .env
 # Edit .env and add your OPENAI_API_KEY
 
 # 5. Run the application
-python main_oop.py interactive
+python main.py interactive
 ```
 
 ## Configuration
@@ -96,7 +96,7 @@ POLYGON_API_KEY=your-key
 
 ```bash
 # Using CLI
-python main_oop.py setup --tickers AAPL MSFT GOOGL
+python main.py setup --tickers AAPL MSFT GOOGL
 
 # Or with Docker
 docker run -it --rm -v $(pwd)/data:/data ohlcv-rag:main \
@@ -124,7 +124,7 @@ Ingesting data...
 
 ```bash
 # Interactive mode
-python main_oop.py interactive
+python main.py interactive
 
 > query What are the recent trends in AAPL?
 ```
@@ -168,39 +168,39 @@ Recommendation: Watch for volume confirmation on breakouts
 
 ```python
 # Find overbought stocks
-python main_oop.py query "Which stocks have RSI above 70?"
+python main.py query "Which stocks have RSI above 70?"
 
 # Identify support/resistance
-python main_oop.py query "What are the key support levels for MSFT?"
+python main.py query "What are the key support levels for MSFT?"
 
 # Analyze volatility
-python main_oop.py query "Compare volatility between tech stocks"
+python main.py query "Compare volatility between tech stocks"
 ```
 
 ### 2. Pattern Recognition
 
 ```python
 # Find specific patterns
-python main_oop.py analyze pattern --pattern uptrend --tickers AAPL
+python main.py analyze pattern --pattern uptrend --tickers AAPL
 
 # Identify reversals
-python main_oop.py analyze pattern --pattern reversal
+python main.py analyze pattern --pattern reversal
 
 # Detect breakouts
-python main_oop.py analyze pattern --pattern breakout
+python main.py analyze pattern --pattern breakout
 ```
 
 ### 3. Comparative Analysis
 
 ```python
 # Compare multiple stocks
-python main_oop.py query "Compare performance of AAPL vs MSFT"
+python main.py query "Compare performance of AAPL vs MSFT"
 
 # Sector analysis
-python main_oop.py query "How are tech stocks performing overall?"
+python main.py query "How are tech stocks performing overall?"
 
 # Correlation analysis
-python main_oop.py query "Which stocks move together?"
+python main.py query "Which stocks move together?"
 ```
 
 ## Interactive Commands
@@ -240,7 +240,7 @@ Processing time: [Time taken]
 
 ```bash
 # Start with Weaviate (more features)
-VECTOR_STORE_TYPE=weaviate python main_oop.py setup
+VECTOR_STORE_TYPE=weaviate python main.py setup
 
 # Or with Docker
 docker-compose --profile weaviate up -d
@@ -250,10 +250,10 @@ docker-compose --profile weaviate up -d
 
 ```bash
 # Use Alpha Vantage for more detailed data
-DATA_SOURCE=alpha_vantage python main_oop.py setup
+DATA_SOURCE=alpha_vantage python main.py setup
 
 # Load from CSV files
-DATA_SOURCE=csv CSV_DATA_DIR=./mydata python main_oop.py setup
+DATA_SOURCE=csv CSV_DATA_DIR=./mydata python main.py setup
 ```
 
 ### Batch Processing
@@ -299,7 +299,7 @@ OPENAI_API_KEY=sk-your-actual-api-key
 ### Issue: "Low confidence results"
 
 **Solutions**:
-1. Ingest more data: `python main_oop.py setup --period 2y`
+1. Ingest more data: `python main.py setup --period 2y`
 2. Be more specific in queries
 3. Use exact ticker symbols
 4. Check if data exists for the time period
@@ -396,4 +396,4 @@ A: No, this is a technical analysis tool for educational purposes.
 
 ---
 
-Ready to analyze markets with AI? Start with `python main_oop.py interactive` and explore! 🚀
+Ready to analyze markets with AI? Start with `python main.py interactive` and explore! 🚀

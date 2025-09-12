@@ -506,7 +506,7 @@ def health_check():
 
 ```bash
 # Standard development
-python main_oop.py interactive
+python main.py interactive
 
 # With Docker
 make dev
