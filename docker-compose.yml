@@ -5,7 +5,7 @@ services:
   ohlcv-rag:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile
       target: runtime
       args:
         BUILDKIT_INLINE_CACHE: 1
@@ -33,7 +33,7 @@ services:
   ohlcv-rag-dev:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile
       target: development
       args:
         BUILDKIT_INLINE_CACHE: 1

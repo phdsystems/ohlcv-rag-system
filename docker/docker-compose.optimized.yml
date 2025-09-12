@@ -21,8 +21,8 @@ services:
   # ============================================
   app:
     build:
-      context: .
-      dockerfile: Dockerfile.optimized
+      context: ..
+      dockerfile: docker/Dockerfile.optimized
       target: runtime
       args:
         <<: *build-args
@@ -64,8 +64,8 @@ services:
   # ============================================
   dev:
     build:
-      context: .
-      dockerfile: Dockerfile.optimized
+      context: ..
+      dockerfile: docker/Dockerfile.optimized
       target: development
       args:
         <<: *build-args
@@ -97,8 +97,8 @@ services:
   # ============================================
   test:
     build:
-      context: .
-      dockerfile: Dockerfile.optimized
+      context: ..
+      dockerfile: docker/Dockerfile.optimized
       target: test
       args:
         <<: *build-args

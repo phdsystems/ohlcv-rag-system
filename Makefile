@@ -8,7 +8,7 @@ DOCKER_BUILDKIT := 1
 COMPOSE_DOCKER_CLI_BUILD := 1
 BUILDKIT_PROGRESS := plain
 PARALLEL_JOBS ?= $(shell nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
-DOCKERFILE := Dockerfile.optimized
+DOCKERFILE := docker/Dockerfile.optimized
 
 # Export for docker-compose
 export IMAGE_TAG
@@ -41,7 +41,7 @@ help: ## Show this help message
 .PHONY: build
 build: ## Build Docker image (runtime target)
 	@echo "$(BLUE)Building $(IMAGE_NAME):$(IMAGE_TAG)...$(NC)"
-	@./docker-build.sh build runtime
+	@./docker/docker-build.sh build runtime
 
 .PHONY: build-all
 build-all: ## Build all Docker targets in parallel
@@ -51,26 +51,26 @@ build-all: ## Build all Docker targets in parallel
 .PHONY: up
 up: ## Start services with docker-compose
 	@echo "$(BLUE)Starting services...$(NC)"
-	docker-compose -f docker-compose.optimized.yml up -d --parallel
+	docker-compose -f docker/docker-compose.optimized.yml up -d --parallel
 
 .PHONY: down
 down: ## Stop all services
 	@echo "$(YELLOW)Stopping services...$(NC)"
-	docker-compose -f docker-compose.optimized.yml down
+	docker-compose -f docker/docker-compose.optimized.yml down
 
 .PHONY: logs
 logs: ## Show logs from all services
-	docker-compose -f docker-compose.optimized.yml logs -f
+	docker-compose -f docker/docker-compose.optimized.yml logs -f
 
 .PHONY: shell
 shell: ## Open shell in running container
 	@echo "$(BLUE)Opening shell in container...$(NC)"
-	docker-compose -f docker-compose.optimized.yml exec app /bin/bash
+	docker-compose -f docker/docker-compose.optimized.yml exec app /bin/bash
 
 .PHONY: clean
 clean: ## Clean up Docker resources
 	@echo "$(YELLOW)Cleaning up...$(NC)"
-	docker-compose -f docker-compose.optimized.yml down -v
+	docker-compose -f docker/docker-compose.optimized.yml down -v
 	docker system prune -f
 
 .PHONY: test
