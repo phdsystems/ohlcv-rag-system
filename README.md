@@ -20,7 +20,7 @@ cd ohlcv-rag-system
 make quick-start
 ```
 
-See **[QUICKSTART.md](QUICKSTART.md)** for more options or the **[Getting Started Guide](docs/guides/GETTING_STARTED.md)** for detailed setup.
+See **[QUICKSTART.md](docs/QUICKSTART.md)** for more options or the **[Getting Started Guide](docs/guides/GETTING_STARTED.md)** for detailed setup.
 
 ## Documentation
 

@@ -217,7 +217,7 @@ WORKDIR /app
 
 # Copy test files
 COPY --chown=ohlcv:ohlcv tests/ ./tests/
-COPY --chown=ohlcv:ohlcv pytest.ini ./
+COPY --chown=ohlcv:ohlcv tests/pytest.ini ./
 COPY --chown=ohlcv:ohlcv pyproject.toml ./
 
 # Install test dependencies
