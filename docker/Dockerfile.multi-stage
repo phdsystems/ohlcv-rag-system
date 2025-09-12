@@ -52,7 +52,7 @@ WORKDIR /app
 
 # Copy application code
 COPY src/ ./src/
-COPY main.py main_oop.py ./
+COPY main_oop.py ./
 COPY .env.example ./
 
 # Create necessary directories with proper structure

@@ -28,7 +28,6 @@ WORKDIR /app
 
 # Copy application code
 COPY src/ ./src/
-COPY main.py .
 COPY main_oop.py .
 COPY .env.example .
 
