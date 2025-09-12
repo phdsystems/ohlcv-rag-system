@@ -155,7 +155,7 @@ docker build --target runtime -t ohlcv-rag:latest .
 
 ```bash
 # Start all services
-docker-compose up -d
+docker-compose -f docker/docker-compose.yml up -d
 
 # Start specific vector store configuration
 docker-compose -f docker-compose.yml -f docker-compose.chromadb.yml up -d

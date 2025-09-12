@@ -124,7 +124,7 @@ pytest tests/test_simple.py --pdb
 
 ```bash
 # Start required services
-docker-compose up -d chromadb qdrant weaviate
+docker-compose -f docker/docker-compose.yml up -d chromadb qdrant weaviate
 
 # Run integration tests
 make test-integration

@@ -128,7 +128,7 @@ docker-compose -f docker-compose.yml -f docker-compose.chromadb.yml up
 docker-compose exec ohlcv-rag python main.py query "Show trends"
 
 # Scale services
-docker-compose up --scale ohlcv-rag=3
+docker-compose -f docker/docker-compose.yml up --scale ohlcv-rag=3
 
 # Run in development mode with hot-reload
 make dev

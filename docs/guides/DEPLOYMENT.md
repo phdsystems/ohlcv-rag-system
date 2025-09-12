@@ -549,7 +549,7 @@ deploy:
 
 ```bash
 # Horizontal scaling
-docker-compose up --scale ohlcv-rag=5
+docker-compose -f docker/docker-compose.yml up --scale ohlcv-rag=5
 
 # Vertical scaling
 docker update --cpus 4 --memory 8g ohlcv-rag

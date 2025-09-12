@@ -198,7 +198,7 @@ docker run -it --rm \
 
 ```bash
 # Start all services
-docker-compose up -d
+docker-compose -f docker/docker-compose.yml up -d
 
 # Start with specific profile
 docker-compose --profile chromadb up -d
@@ -479,7 +479,7 @@ make test
 docker-compose config
 
 # Dry run
-docker-compose up --no-start
+docker-compose -f docker/docker-compose.yml up --no-start
 ```
 
 ## Best Practices
