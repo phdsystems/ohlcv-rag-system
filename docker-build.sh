@@ -65,9 +65,11 @@ show_help() {
     echo "  $0 shell app"
 }
 
-# Enable BuildKit
+# Enable BuildKit and parallel builds
 export DOCKER_BUILDKIT=1
 export COMPOSE_DOCKER_CLI_BUILD=1
+export BUILDKIT_PROGRESS=plain
+export DOCKER_BUILD_PARALLEL=1
 
 # Parse command line arguments
 COMMAND=${1:-help}
@@ -112,6 +114,12 @@ case $COMMAND in
         mkdir -p data/{chromadb,qdrant,weaviate} test-results
         
         # Build with BuildKit optimizations
+        BUILDX_ARGS=""
+        if [ "$PARALLEL" = "--parallel" ]; then
+            BUILDX_ARGS="--build-arg UV_CONCURRENT_DOWNLOADS=10 --build-arg UV_CONCURRENT_BUILDS=4"
+            print_info "Building with parallelism enabled"
+        fi
+        
         docker build \
             --target $TARGET \
             --tag ${PROJECT_NAME}:${TAG} \
@@ -119,8 +127,8 @@ case $COMMAND in
             --build-arg BUILDKIT_INLINE_CACHE=1 \
             --cache-from ${PROJECT_NAME}:cache \
             --cache-from python:3.11-slim \
+            ${BUILDX_ARGS} \
             ${NO_CACHE} \
-            ${PARALLEL} \
             -f $DOCKERFILE \
             .
         
@@ -140,7 +148,7 @@ case $COMMAND in
         # Start services based on profile
         case $PROFILE in
             dev)
-                docker-compose -f $COMPOSE_FILE --profile dev up -d
+                docker-compose -f $COMPOSE_FILE --profile dev up -d --parallel
                 print_success "Development environment started!"
                 print_info "Jupyter available at: http://localhost:8888"
                 ;;
@@ -148,11 +156,11 @@ case $COMMAND in
                 docker-compose -f $COMPOSE_FILE --profile test up --abort-on-container-exit
                 ;;
             full)
-                docker-compose -f $COMPOSE_FILE --profile full up -d
+                docker-compose -f $COMPOSE_FILE --profile full up -d --parallel
                 print_success "Full stack started with all services!"
                 ;;
             *)
-                docker-compose -f $COMPOSE_FILE up -d
+                docker-compose -f $COMPOSE_FILE up -d --parallel
                 print_success "Default services started!"
                 ;;
         esac

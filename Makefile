@@ -6,11 +6,15 @@ BRANCH := $(shell git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main")
 IMAGE_TAG ?= $(subst /,-,$(BRANCH))
 DOCKER_BUILDKIT := 1
 COMPOSE_DOCKER_CLI_BUILD := 1
+BUILDKIT_PROGRESS := plain
+PARALLEL_JOBS ?= $(shell nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
+DOCKERFILE := Dockerfile.optimized
 
 # Export for docker-compose
 export IMAGE_TAG
 export DOCKER_BUILDKIT
 export COMPOSE_DOCKER_CLI_BUILD
+export BUILDKIT_PROGRESS
 
 # Colors
 RED := \033[0;31m
@@ -37,36 +41,36 @@ help: ## Show this help message
 .PHONY: build
 build: ## Build Docker image (runtime target)
 	@echo "$(BLUE)Building $(IMAGE_NAME):$(IMAGE_TAG)...$(NC)"
-	@bash scripts/docker-build.sh
+	@./docker-build.sh build runtime
 
 .PHONY: build-all
 build-all: ## Build all Docker targets in parallel
-	@echo "$(BLUE)Building all targets for $(IMAGE_NAME):$(IMAGE_TAG)...$(NC)"
-	@bash scripts/docker-build.sh --all
+	@echo "$(BLUE)Building all targets for $(IMAGE_NAME):$(IMAGE_TAG) with $(PARALLEL_JOBS) parallel jobs...$(NC)"
+	@$(MAKE) -j$(PARALLEL_JOBS) build-runtime build-dev build-test build-production
 
 .PHONY: up
 up: ## Start services with docker-compose
 	@echo "$(BLUE)Starting services...$(NC)"
-	docker-compose up -d
+	docker-compose -f docker-compose.optimized.yml up -d --parallel
 
 .PHONY: down
 down: ## Stop all services
 	@echo "$(YELLOW)Stopping services...$(NC)"
-	docker-compose down
+	docker-compose -f docker-compose.optimized.yml down
 
 .PHONY: logs
 logs: ## Show logs from all services
-	docker-compose logs -f
+	docker-compose -f docker-compose.optimized.yml logs -f
 
 .PHONY: shell
 shell: ## Open shell in running container
 	@echo "$(BLUE)Opening shell in container...$(NC)"
-	docker-compose exec ohlcv-rag /bin/bash
+	docker-compose -f docker-compose.optimized.yml exec app /bin/bash
 
 .PHONY: clean
 clean: ## Clean up Docker resources
 	@echo "$(YELLOW)Cleaning up...$(NC)"
-	docker-compose down
+	docker-compose -f docker-compose.optimized.yml down -v
 	docker system prune -f
 
 .PHONY: test
@@ -148,6 +152,72 @@ test-qdrant: ## Run Qdrant integration tests
 test-e2e: ## Run end-to-end integration tests
 	@echo "$(BLUE)Running end-to-end integration tests...$(NC)"
 	@python -m pytest tests/integration/test_end_to_end.py -v -s
+
+# Parallel build targets
+.PHONY: build-runtime
+build-runtime: ## Build runtime Docker image
+	@echo "$(BLUE)Building runtime image...$(NC)"
+	@docker build \
+		--target runtime \
+		--tag $(IMAGE_NAME):runtime-$(IMAGE_TAG) \
+		--build-arg BUILDKIT_INLINE_CACHE=1 \
+		--build-arg UV_CONCURRENT_DOWNLOADS=10 \
+		--build-arg UV_CONCURRENT_BUILDS=4 \
+		--cache-from $(IMAGE_NAME):cache \
+		-f $(DOCKERFILE) .
+
+.PHONY: build-dev
+build-dev: ## Build development Docker image
+	@echo "$(BLUE)Building development image...$(NC)"
+	@docker build \
+		--target development \
+		--tag $(IMAGE_NAME):dev-$(IMAGE_TAG) \
+		--build-arg BUILDKIT_INLINE_CACHE=1 \
+		--build-arg UV_CONCURRENT_DOWNLOADS=10 \
+		--build-arg UV_CONCURRENT_BUILDS=4 \
+		--cache-from $(IMAGE_NAME):runtime-$(IMAGE_TAG) \
+		-f $(DOCKERFILE) .
+
+.PHONY: build-test
+build-test: ## Build test Docker image
+	@echo "$(BLUE)Building test image...$(NC)"
+	@docker build \
+		--target test \
+		--tag $(IMAGE_NAME):test-$(IMAGE_TAG) \
+		--build-arg BUILDKIT_INLINE_CACHE=1 \
+		--build-arg UV_CONCURRENT_DOWNLOADS=10 \
+		--build-arg UV_CONCURRENT_BUILDS=4 \
+		--cache-from $(IMAGE_NAME):runtime-$(IMAGE_TAG) \
+		-f $(DOCKERFILE) .
+
+.PHONY: build-production
+build-production: ## Build production Docker image
+	@echo "$(BLUE)Building production image...$(NC)"
+	@docker build \
+		--target production \
+		--tag $(IMAGE_NAME):prod-$(IMAGE_TAG) \
+		--build-arg BUILDKIT_INLINE_CACHE=1 \
+		--build-arg UV_CONCURRENT_DOWNLOADS=10 \
+		--build-arg UV_CONCURRENT_BUILDS=4 \
+		--cache-from $(IMAGE_NAME):cache \
+		-f $(DOCKERFILE) .
+
+.PHONY: build-parallel
+build-parallel: ## Build all images with maximum parallelism
+	@echo "$(BLUE)Building all images in parallel with $(PARALLEL_JOBS) jobs...$(NC)"
+	@$(MAKE) -j$(PARALLEL_JOBS) build-all
+
+.PHONY: benchmark-builds
+benchmark-builds: ## Benchmark sequential vs parallel builds
+	@echo "$(YELLOW)Benchmarking build times...$(NC)"
+	@echo "Sequential build:"
+	@time $(MAKE) build-runtime build-dev build-test build-production
+	@$(MAKE) clean
+	@echo "\nParallel build ($(PARALLEL_JOBS) jobs):"
+	@time $(MAKE) -j$(PARALLEL_JOBS) build-runtime build-dev build-test build-production
+
+# Enable parallel execution for these targets
+.PARALLEL: build-runtime build-dev build-test build-production
 
 # Default target
 .DEFAULT_GOAL := help

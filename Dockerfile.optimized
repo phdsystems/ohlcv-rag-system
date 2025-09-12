@@ -6,6 +6,9 @@
 # ============================================
 FROM python:3.11-slim AS base
 
+# Enable parallel downloads for apt
+RUN echo 'Acquire::http::Pipeline-Depth "5";' > /etc/apt/apt.conf.d/99parallel
+
 # Install only essential system dependencies
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
@@ -33,9 +36,11 @@ WORKDIR /tmp
 # Copy only dependency files first (better layer caching)
 COPY pyproject.toml uv.lock* ./
 
-# Install dependencies with aggressive caching
+# Install dependencies with aggressive caching and parallelism
 RUN --mount=type=cache,target=/root/.cache/uv,sharing=locked \
     --mount=type=cache,target=/tmp/.uv,sharing=locked \
+    UV_CONCURRENT_DOWNLOADS=10 \
+    UV_CONCURRENT_BUILDS=4 \
     uv sync --frozen --no-install-project --no-dev
 
 # ============================================
@@ -134,14 +139,19 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 # Install UV for development
 COPY --from=uv-installer /root/.local/bin/uv /usr/local/bin/uv
 
-# Install development Python tools
+# Install development Python tools in parallel
 RUN --mount=type=cache,target=/root/.cache/uv,sharing=locked \
-    uv tool install --python python3.11 ipython && \
-    uv tool install --python python3.11 jupyter && \
-    uv tool install --python python3.11 pytest && \
-    uv tool install --python python3.11 black && \
-    uv tool install --python python3.11 ruff && \
-    uv tool install --python python3.11 mypy
+    UV_CONCURRENT_DOWNLOADS=10 \
+    UV_CONCURRENT_BUILDS=4 \
+    bash -c ' \
+    uv tool install --python python3.11 ipython & \
+    uv tool install --python python3.11 jupyter & \
+    uv tool install --python python3.11 pytest & \
+    uv tool install --python python3.11 black & \
+    uv tool install --python python3.11 ruff & \
+    uv tool install --python python3.11 mypy & \
+    wait \
+    '
 
 ENV PATH="/root/.local/bin:${PATH}"
 
