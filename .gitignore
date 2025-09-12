@@ -86,3 +86,6 @@ docs/.doctrees/
 *.pem
 .env.*
 !.env.example
+config/encrypted/
+*.enc
+.env.encrypted

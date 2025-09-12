@@ -1,6 +1,7 @@
 import os
 from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
+from src.utils.crypto_utils import get_api_key
 from langchain.prompts import PromptTemplate
 from langchain.llms.base import LLM
 from langchain.schema import Document
@@ -34,9 +35,9 @@ class OHLCVRAGPipeline:
             except ImportError:
                 raise ImportError("Please install langchain-openai: pip install langchain-openai")
             
-            api_key = api_key or os.getenv("OPENAI_API_KEY")
+            api_key = api_key or get_api_key("OPENAI_API_KEY")
             if not api_key:
-                raise ValueError("OpenAI API key not provided. Set OPENAI_API_KEY environment variable.")
+                raise ValueError("OpenAI API key not provided. Set OPENAI_API_KEY environment variable or encrypt it.")
             return ChatOpenAI(
                 api_key=api_key,
                 model=model or "gpt-3.5-turbo",
@@ -49,9 +50,9 @@ class OHLCVRAGPipeline:
             except ImportError:
                 raise ImportError("Please install langchain-anthropic: pip install langchain-anthropic")
             
-            api_key = api_key or os.getenv("ANTHROPIC_API_KEY")
+            api_key = api_key or get_api_key("CLAUDE_API_KEY", "ANTHROPIC_API_KEY")
             if not api_key:
-                raise ValueError("Anthropic API key not provided. Set ANTHROPIC_API_KEY environment variable.")
+                raise ValueError("Claude/Anthropic API key not provided. Set CLAUDE_API_KEY or ANTHROPIC_API_KEY environment variable or encrypt it.")
             return ChatAnthropic(
                 api_key=api_key,
                 model=model or "claude-3-sonnet-20240229",

@@ -16,6 +16,7 @@ import openai
 import os
 import time
 from typing import List, Dict, Any
+from src.utils.crypto_utils import get_api_key
 
 
 @pytest.mark.integration
@@ -42,13 +43,13 @@ class TestRealDataIngestion:
         assert data['Volume'].notna().all()
         assert (data['High'] >= data['Low']).all()
     
-    @pytest.mark.skipif(not os.getenv('ALPHA_VANTAGE_API_KEY'), 
+    @pytest.mark.skipif(not get_api_key('ALPHA_VANTAGE_API_KEY'), 
                         reason="Alpha Vantage API key not configured")
     def test_alpha_vantage_real(self):
         """Test real Alpha Vantage API"""
         import requests
         
-        api_key = os.getenv('ALPHA_VANTAGE_API_KEY')
+        api_key = get_api_key('ALPHA_VANTAGE_API_KEY')
         url = f"https://www.alphavantage.co/query"
         params = {
             'function': 'TIME_SERIES_DAILY',
