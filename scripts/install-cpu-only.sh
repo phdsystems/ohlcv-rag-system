@@ -1,9 +1,9 @@
 #!/bin/bash
-# Optimized installation script for OHLCV RAG System
+# CPU-only installation script for OHLCV RAG System
 
 set -e
 
-echo "🚀 Starting optimized installation..."
+echo "🚀 Starting CPU-only installation..."
 
 # Export UV optimizations
 export UV_CONCURRENT_DOWNLOADS=8

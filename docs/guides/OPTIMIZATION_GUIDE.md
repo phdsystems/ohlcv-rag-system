@@ -41,10 +41,10 @@ Runs only simple unit tests with minimal dependencies:
 ./scripts/test-quick.sh
 ```
 
-#### Optimized Install (`scripts/install-optimized.sh`)
+#### Optimized Install (`scripts/install-cpu-only.sh`)
 Full installation with CPU-only PyTorch:
 ```bash
-./scripts/install-optimized.sh
+./scripts/install-cpu-only.sh
 ```
 
 ## Usage
@@ -58,7 +58,7 @@ make test-quick
 ### For Full Development
 ```bash
 # Install with CPU-only PyTorch (faster)
-make install-optimized
+make install-cpu-only
 
 # Then run all tests
 make test-all
@@ -81,7 +81,7 @@ uv sync --group test          # For integration tests
 
 ## Tips
 
-1. **First-time setup**: Use `make install-optimized` for CPU-only dependencies
+1. **First-time setup**: Use `make install-cpu-only` for CPU-only dependencies
 2. **Quick iterations**: Use `make test-quick` for rapid testing
 3. **CI/CD**: Use minimal groups to speed up pipelines
 4. **Production**: Use full dependencies with GPU support if needed
