@@ -113,10 +113,10 @@ test-profile: ## Run specific test profile (use PROFILE=<name>)
 	@echo "$(BLUE)Running test profile: $(PROFILE)...$(NC)"
 	@./scripts/test-profiles.sh $(PROFILE)
 
-.PHONY: install-cpu-only
-install-cpu-only: ## Install with CPU-only PyTorch (faster, smaller)
-	@echo "$(BLUE)Installing CPU-only dependencies (faster, smaller)...$(NC)"
-	@./scripts/install-cpu-only.sh
+.PHONY: install-smart
+install-smart: ## Smart install - auto-detects GPU and installs optimal PyTorch
+	@echo "$(BLUE)Smart installation - detecting hardware and installing optimal PyTorch...$(NC)"
+	@./scripts/install-smart.sh
 
 .PHONY: test-install
 test-install: ## Install test dependencies

@@ -1,9 +1,10 @@
 #!/bin/bash
-# CPU-only installation script for OHLCV RAG System
+# Smart installation script for OHLCV RAG System
+# Automatically detects GPU and installs appropriate PyTorch version
 
 set -e
 
-echo "🚀 Starting CPU-only installation..."
+echo "🚀 Starting smart installation..."
 
 # Export UV optimizations
 export UV_CONCURRENT_DOWNLOADS=8
@@ -26,15 +27,27 @@ uv python install 3.11
 echo "🧹 Cleaning previous installation..."
 rm -rf .venv
 
-# Install with CPU-only PyTorch
-echo "⚡ Installing dependencies with CPU-only PyTorch..."
-echo "This uses CPU-only versions to avoid 3GB+ of CUDA downloads"
+# Detect GPU and install appropriate PyTorch
+echo "🔍 Detecting hardware capabilities..."
+
+# Check for NVIDIA GPU
+if command -v nvidia-smi &>/dev/null && nvidia-smi &>/dev/null; then
+    echo "🚀 NVIDIA GPU detected - installing CUDA-enabled PyTorch for optimal performance"
+    TORCH_INDEX="https://download.pytorch.org/whl/cu121"
+    INSTALL_TYPE="GPU-accelerated"
+else
+    echo "💻 No GPU detected - installing CPU-only PyTorch (faster download, smaller size)"
+    TORCH_INDEX="https://download.pytorch.org/whl/cpu"
+    INSTALL_TYPE="CPU-only"
+fi
+
+echo "⚡ Installing dependencies with $INSTALL_TYPE PyTorch..."
 
 # First, install the package without dependencies
 uv sync --no-install-project --python 3.11
 
-# Then install with CPU-only torch
-uv pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu --python 3.11
+# Then install PyTorch with detected capabilities
+uv pip install torch torchvision --index-url $TORCH_INDEX --python 3.11
 
 # Finally, sync the rest
 uv sync --python 3.11
