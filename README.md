@@ -10,6 +10,7 @@ A production-ready Retrieval-Augmented Generation (RAG) system for analyzing OHL
 - **Multiple Vector Stores**: ChromaDB, Weaviate, Qdrant, FAISS, Milvus
 - **Docker Support**: Full containerization with optimized builds
 - **OOP Architecture**: Clean, maintainable, extensible codebase
+- **🔐 API Key Encryption**: Military-grade encryption for secure credential storage
 
 ## Quick Start
 
@@ -42,6 +43,7 @@ See **[QUICKSTART.md](docs/QUICKSTART.md)** for more options or the **[Getting S
 - **[Vector Stores](docs/VECTOR_STORES.md)** - Database options and configuration
 - **[Data Adapters](docs/DATA_ADAPTERS.md)** - Data source integrations
 - **[Coding Standards](docs/CODING_STANDARDS.md)** - Code style and best practices
+- **[🔐 Encryption Guide](docs/ENCRYPTION.md)** - API key encryption and security
 
 ## Basic Usage
 
@@ -64,6 +66,19 @@ See [Usage Guide](docs/guides/USAGE.md) for detailed instructions.
 ## License
 
 MIT License - see [LICENSE](LICENSE) file for details.
+
+## Security
+
+### API Key Encryption
+Protect your API keys with built-in encryption:
+
+```bash
+# Quick setup
+python -c "from src.utils.simple_crypto import get_secure_config; get_secure_config().encrypt_from_env()"
+./scripts/encryption/secure-env.sh
+```
+
+See the [Encryption Guide](docs/ENCRYPTION.md) for detailed instructions.
 
 ## Support
 

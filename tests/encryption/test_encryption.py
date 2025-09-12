@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Test script for API key encryption/decryption workflow
 """
@@ -9,7 +8,7 @@ import subprocess
 from pathlib import Path
 
 # Add src to path
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from src.utils.crypto_utils import CryptoManager, get_api_key
 

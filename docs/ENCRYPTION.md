@@ -30,14 +30,14 @@ python -c "from src.utils.simple_crypto import get_secure_config; get_secure_con
 curl -sSL https://raw.githubusercontent.com/phdsystems/ade-crypt/main/lib/install.sh | bash
 
 # Then encrypt your keys
-./scripts/encrypt-api-keys.sh setup
+./scripts/encryption/encrypt-api-keys.sh setup
 ```
 
 ### Step 3: Verify Encryption
 
 ```bash
 # Verify your keys were encrypted successfully
-./scripts/encrypt-api-keys.sh verify
+./scripts/encryption/encrypt-api-keys.sh verify
 
 # You should see output like:
 # ✓ CLAUDE_API_KEY: ✓ (decryption successful)
@@ -50,7 +50,7 @@ After encryption, your plain text keys still exist in `.env`. Remove them for se
 
 ```bash
 # This script safely removes sensitive keys while preserving other settings
-./scripts/secure-env.sh
+./scripts/encryption/secure-env.sh
 
 # Review the secured file
 cat .env.secured
@@ -145,10 +145,10 @@ Run the encryption tests:
 
 ```bash
 # Test Python cryptography implementation
-python test_simple_crypto.py
+python tests/encryption/test_simple_crypto.py
 
 # Test the full encryption workflow
-python test_encryption.py
+python tests/encryption/test_encryption.py
 ```
 
 ## Complete Workflow Example
@@ -166,11 +166,11 @@ python -c "from src.utils.simple_crypto import get_secure_config; get_secure_con
 # Output: Encrypted 2 keys from environment
 
 # 3. Verify encryption worked
-./scripts/encrypt-api-keys.sh verify
+./scripts/encryption/encrypt-api-keys.sh verify
 # Output: ✓ CLAUDE_API_KEY: ✓ (decryption successful)
 
 # 4. Secure your .env file
-./scripts/secure-env.sh
+./scripts/encryption/secure-env.sh
 # Output: Created secured environment file: .env.secured
 
 # 5. Replace .env with secured version
@@ -183,7 +183,7 @@ python src/rag_pipeline.py  # Will use encrypted keys automatically
 ## Troubleshooting
 
 ### "API key not found" after encryption
-- Ensure encryption was successful: `./scripts/encrypt-api-keys.sh verify`
+- Ensure encryption was successful: `./scripts/encryption/encrypt-api-keys.sh verify`
 - Check encrypted files exist: `ls ./config/encrypted/`
 - Verify encryption key exists: `ls ./config/.encryption_key`
 
@@ -192,7 +192,7 @@ If ADE-Crypt installation fails or has issues, the system will automatically fal
 
 ### Plain text keys still visible in .env
 - This is expected after encryption (for safety)
-- Run `./scripts/secure-env.sh` to remove them
+- Run `./scripts/encryption/secure-env.sh` to remove them
 - The script creates a backup before removing keys
 
 ### Missing Keys

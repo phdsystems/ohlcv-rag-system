@@ -35,6 +35,7 @@ class CryptoManager:
         self.encrypted_dir = Path(encrypted_dir)
         self._decrypted_cache: Dict[str, str] = {}
         
+    @lru_cache(maxsize=1)
     def _check_ade_crypt(self) -> bool:
         """Check if ADE-Crypt is installed."""
         try:
