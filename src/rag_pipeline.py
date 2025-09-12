@@ -360,3 +360,14 @@ Key Metrics:
             'similar_periods': self._format_sources(similar_patterns),
             'num_similar': len(similar_patterns)
         }
+    
+    def get_status(self) -> Dict[str, Any]:
+        """Get the status of the RAG pipeline component"""
+        return {
+            'component': 'OHLCVRAGPipeline',
+            'llm_provider': self.llm.__class__.__name__ if self.llm else 'None',
+            'vector_store_connected': self.vector_store is not None,
+            'retriever_connected': self.retriever is not None,
+            'prompts_loaded': len(self.prompts) if hasattr(self, 'prompts') else 0,
+            'initialized': True
+        }

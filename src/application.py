@@ -10,8 +10,10 @@ from dotenv import load_dotenv
 
 from src.core.base import BaseComponent
 from src.core.exceptions import OHLCVRAGException
-from src.ingestion import DataIngestionEngine
-from src.pipeline import RAGPipeline, EnhancedRetriever, VectorStoreAdapter
+from src.data_ingestion import OHLCVDataIngestion as DataIngestionEngine
+from src.rag_pipeline import OHLCVRAGPipeline as RAGPipeline
+from src.retriever import OHLCVRetriever as EnhancedRetriever
+from src.vector_store import OHLCVVectorStore as VectorStoreAdapter
 
 load_dotenv()
 
@@ -93,38 +95,41 @@ class OHLCVRAGApplication(BaseComponent):
         self.log_info("Initializing OHLCV RAG Application")
         
         try:
-            # Initialize data ingestion
+            # Initialize data ingestion - uses tickers from config or empty list
+            ingestion_config = self.config['ingestion']
             self.data_ingestion = DataIngestionEngine(
-                name="DataIngestion",
-                config=self.config['ingestion']
+                tickers=[],  # Will be populated during ingest_data calls
+                source=ingestion_config.get('source', 'yahoo'),
+                period=ingestion_config.get('period', '1y'),
+                interval=ingestion_config.get('interval', '1d')
             )
-            self.data_ingestion.initialize()
             self.state.components_status['ingestion'] = 'initialized'
             
             # Initialize vector store
+            vector_config = self.config['vector_store']
             self.vector_store = VectorStoreAdapter(
-                name="VectorStore",
-                config=self.config['vector_store']
+                persist_directory=vector_config.get('persist_directory', './data/chroma_db'),
+                embedding_model=vector_config.get('embedding_model', 'all-MiniLM-L6-v2'),
+                store_type=vector_config.get('store_type', 'chromadb')
             )
-            self.vector_store.initialize()
             self.state.components_status['vector_store'] = 'initialized'
             
-            # Initialize retriever
+            # Initialize retriever - requires vector store and chunks file
             self.retriever = EnhancedRetriever(
-                name="Retriever",
-                config=self.config['retriever']
+                vector_store=self.vector_store,
+                chunks_file=self.config['retriever'].get('chunks_file', './data/ohlcv_chunks.json')
             )
-            self.retriever.initialize()
-            self.retriever.set_vector_store(self.vector_store)
             self.state.components_status['retriever'] = 'initialized'
             
             # Initialize RAG pipeline
+            pipeline_config = self.config['pipeline']
             self.rag_pipeline = RAGPipeline(
-                name="RAGPipeline",
-                config=self.config['pipeline']
+                vector_store=self.vector_store,
+                retriever=self.retriever,
+                llm_provider=pipeline_config.get('provider', 'mock'),  # Default to mock for testing
+                api_key=pipeline_config.get('api_key'),
+                model=pipeline_config.get('model', 'gpt-3.5-turbo')
             )
-            self.rag_pipeline.initialize()
-            self.rag_pipeline.set_retriever(self.retriever)
             self.state.components_status['pipeline'] = 'initialized'
             
             self._initialized = True
@@ -184,33 +189,27 @@ class OHLCVRAGApplication(BaseComponent):
         self.state.current_operation = 'data_ingestion'
         
         try:
-            # Fetch data
-            data = self.data_ingestion.fetch_data(tickers, start_date, end_date)
+            # Update data ingestion tickers
+            self.data_ingestion.tickers = tickers
             
-            # Create chunks
-            chunks = self.data_ingestion.create_chunks(
-                data, 
-                self.config['ingestion']['window_size']
+            # Fetch OHLCV data
+            data = self.data_ingestion.fetch_ohlcv_data(start_date, end_date)
+            
+            # Create contextual chunks
+            chunks = self.data_ingestion.create_contextual_chunks(
+                self.config['ingestion'].get('window_size', 30)
             )
             
             # Index chunks in vector store
-            documents = []
-            metadatas = []
-            
-            for chunk in chunks:
-                if isinstance(chunk, dict):
-                    documents.append(chunk.get('summary', ''))
-                    metadatas.append(chunk.get('metadata', {}))
-            
-            if documents:
-                ids = self.vector_store.batch_add_documents(documents, metadatas)
-                self.log_info(f"Indexed {len(ids)} chunks in vector store")
+            if chunks:
+                self.vector_store.index_chunks(chunks)
+                self.log_info(f"Indexed {len(chunks)} chunks in vector store")
             
             result = {
                 'success': True,
                 'tickers': tickers,
                 'chunks_created': len(chunks),
-                'documents_indexed': len(documents)
+                'documents_indexed': len(chunks)
             }
             
             self.state.last_ingestion = datetime.now()

@@ -199,6 +199,21 @@ class OHLCVVectorStore:
             'adapter_info': info
         }
     
+    def get_status(self) -> Dict[str, Any]:
+        """Get the status of the vector store component"""
+        # Get embedding model name - it's a string stored in self.embedding_model
+        embedding_model_name = self.embedding_model if hasattr(self, 'embedding_model') else 'all-MiniLM-L6-v2'
+        
+        return {
+            'component': 'OHLCVVectorStore',
+            'store_type': self.store_type,
+            'collection': self.adapter.collection_name if hasattr(self.adapter, 'collection_name') else 'ohlcv_data',
+            'embedding_model': embedding_model_name,
+            'persist_directory': self.persist_directory,
+            'document_count': self.adapter.get_document_count() if hasattr(self.adapter, 'get_document_count') else 0,
+            'initialized': True
+        }
+    
     def clear_collection(self):
         """Clear the collection (backward compatibility)"""
         self.adapter.clear_collection()

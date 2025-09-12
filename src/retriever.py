@@ -49,35 +49,53 @@ class OHLCVRetriever:
                     'ticker': result['metadata']['ticker'],
                     'period': f"{result['metadata']['start_date']} to {result['metadata']['end_date']}",
                     'summary': chunk_data['summary'],
-                    'metadata': result['metadata'],
-                    'data_preview': self._create_data_preview(chunk_data['data']),
-                    'full_data': chunk_data['data']
+                    'metadata': result['metadata']
                 }
+                
+                # Add data preview and full data if available
+                if 'data' in chunk_data and chunk_data['data']:
+                    enhanced_result['data_preview'] = self._create_data_preview(chunk_data['data'])
+                    enhanced_result['full_data'] = chunk_data['data']
+                else:
+                    enhanced_result['data_preview'] = "No detailed data available"
+                    enhanced_result['full_data'] = []
                 enhanced_results.append(enhanced_result)
                 
         return enhanced_results
     
     def _create_data_preview(self, data: List[Dict]) -> str:
-        if not data:
+        """Create a preview of OHLCV data with robust error handling"""
+        if not data or not isinstance(data, list):
             return "No data available"
-            
-        df = pd.DataFrame(data)
         
-        # Select key columns for preview
-        preview_columns = ['Open', 'High', 'Low', 'Close', 'Volume']
-        available_columns = [col for col in preview_columns if col in df.columns]
-        
-        if not available_columns:
-            return "No preview available"
+        try:
+            df = pd.DataFrame(data)
             
-        # Get first and last few rows
-        if len(df) > 6:
-            preview_df = pd.concat([df[available_columns].head(3), 
-                                   df[available_columns].tail(3)])
-        else:
-            preview_df = df[available_columns]
+            if df.empty:
+                return "No data available"
             
-        return preview_df.to_string()
+            # Select key columns for preview
+            preview_columns = ['Open', 'High', 'Low', 'Close', 'Volume']
+            available_columns = [col for col in preview_columns if col in df.columns]
+            
+            if not available_columns:
+                # If no standard OHLCV columns, show first few columns
+                if len(df.columns) > 0:
+                    available_columns = df.columns[:min(5, len(df.columns))]
+                else:
+                    return "No preview available"
+            
+            # Get first and last few rows
+            if len(df) > 6:
+                preview_df = pd.concat([df[available_columns].head(3), 
+                                       df[available_columns].tail(3)])
+            else:
+                preview_df = df[available_columns]
+                
+            return preview_df.to_string()
+            
+        except Exception as e:
+            return f"Data preview unavailable: {str(e)}"
     
     def retrieve_by_pattern(self, pattern_type: str, ticker: Optional[str] = None,
                            n_results: int = 5) -> List[Dict[str, Any]]:
@@ -233,3 +251,13 @@ class OHLCVRetriever:
                 enhanced_results.append(enhanced_result)
                 
         return enhanced_results
+    
+    def get_status(self) -> Dict[str, Any]:
+        """Get the status of the retriever component"""
+        return {
+            'component': 'OHLCVRetriever',
+            'chunks_loaded': len(self.chunks),
+            'chunks_file': self.chunks_file,
+            'vector_store_connected': self.vector_store is not None,
+            'initialized': True
+        }

@@ -281,3 +281,16 @@ class OHLCVDataIngestion:
     def get_source_info(source: str) -> Dict[str, Any]:
         """Get information about a specific data source"""
         return DataSourceManager.get_adapter_info(source)
+    
+    def get_status(self) -> Dict[str, Any]:
+        """Get the status of the data ingestion component"""
+        return {
+            'component': 'OHLCVDataIngestion',
+            'tickers': self.tickers,
+            'source': self.source,
+            'period': self.period,
+            'interval': self.interval,
+            'data_loaded': len(self.data) > 0,
+            'tickers_loaded': list(self.data.keys()) if self.data else [],
+            'adapter_info': self.adapter.get_adapter_info() if hasattr(self.adapter, 'get_adapter_info') else {}
+        }
